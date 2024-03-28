@@ -65,7 +65,7 @@ public class GoalController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/restore")
+    @PatchMapping("/restore")
     public Response<Void> restore(Authentication authentication,
                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
