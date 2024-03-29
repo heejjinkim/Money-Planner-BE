@@ -1,5 +1,6 @@
 package com.umc5th.muffler.domain.goal.controller;
 
+import com.umc5th.muffler.domain.goal.dto.DailyBudgetsRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalConverter;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalGetResponse;
@@ -8,7 +9,7 @@ import com.umc5th.muffler.domain.goal.dto.GoalListResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalPreviewResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalPreviousResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalReportResponse;
-import com.umc5th.muffler.domain.goal.dto.GoalTitleRequest;
+import com.umc5th.muffler.domain.goal.dto.GoalUpdateRequest;
 import com.umc5th.muffler.domain.goal.service.GoalCreateService;
 import com.umc5th.muffler.domain.goal.service.GoalService;
 import com.umc5th.muffler.entity.Goal;
@@ -75,13 +76,14 @@ public class GoalController {
     }
 
     @PatchMapping("/{goalId}")
-    public Response<Void> updateTitle(@PathVariable Long goalId, @RequestBody @Valid GoalTitleRequest request, Authentication authentication) {
-        goalService.updateTitle(goalId, request.getTitle(), authentication.getName());
-    public Response<Void> updateTitleAndIcon(@PathVariable Long goalId, @RequestBody @Valid GoalTitleRequest request, Authentication authentication) {
+    public Response<Void> updateTitleAndIcon(@PathVariable Long goalId, @RequestBody @Valid GoalUpdateRequest request, Authentication authentication) {
         goalService.updateTitleAndIcon(goalId, request.getTitle(), request.getIcon(), authentication.getName());
         return Response.success();
     }
 
+    @PatchMapping("/{goalId}/daily-budgets")
+    public Response<Void> updateDailyBudgets(@PathVariable Long goalId, @RequestBody @Valid DailyBudgetsRequest request, Authentication authentication) {
+        goalCreateService.updateDailyBudgets(authentication.getName(), goalId, request.getDailyBudgets());
         return Response.success();
     }
 

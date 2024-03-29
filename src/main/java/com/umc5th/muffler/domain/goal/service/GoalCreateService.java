@@ -6,6 +6,7 @@ import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_GOAL_INP
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
+import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanJdbcRepository;
 import com.umc5th.muffler.domain.goal.dto.CategoryGoalRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
 import com.umc5th.muffler.domain.goal.repository.GoalJdbcRepository;
@@ -37,6 +38,7 @@ public class GoalCreateService {
 
     private final GoalRepository goalRepository;
     private final GoalJdbcRepository goalJdbcRepository;
+    private final DailyPlanJdbcRepository dailyPlanJdbcRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
 
@@ -55,6 +57,17 @@ public class GoalCreateService {
         goalJdbcRepository.batchInsertDailyPlans(dailyPlans);
 
         member.addGoal(savedGoal);
+    }
+
+    public void updateDailyBudgets(String memberId, Long goalId, List<Long> dailyBudgets) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+        Goal goal = goalRepository.findByIdAndFetchDailyPlans(goalId)
+                .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
+        validateDailyPlans(goal.getStartDate(), goal.getEndDate(), dailyBudgets, goal.getTotalBudget());
+
+        List<DailyPlan> dailyPlans = goal.getDailyPlans();
+        dailyPlanJdbcRepository.batchUpdateBudget(dailyPlans, dailyBudgets);
     }
 
     private void validateGoalInput(GoalCreateRequest request, Member member) {
