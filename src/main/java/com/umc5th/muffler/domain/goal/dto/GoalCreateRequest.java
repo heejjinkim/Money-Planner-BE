@@ -24,6 +24,8 @@ public class GoalCreateRequest {
     private LocalDate endDate;
     @NotNull
     private Long totalBudget;
+    @NotNull
+    private Boolean restore;
 
     @NotNull
     private List<CategoryGoalRequest> categoryGoals;

@@ -45,6 +45,9 @@ public class GoalController {
     @PostMapping
     public Response<Void> create(@RequestBody @Valid GoalCreateRequest request, Authentication authentication) {
         goalCreateService.create(request, authentication.getName());
+        if (request.getRestore()) {
+            goalService.restore(authentication.getName(), request.getStartDate(), request.getEndDate(), request.getRestore());
+        }
         return Response.success();
     }
 
@@ -63,15 +66,6 @@ public class GoalController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/restore")
-    public Response<Void> restore(Authentication authentication,
-                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                        @RequestParam boolean restore) {
-        goalService.restore(authentication.getName(), startDate, endDate, restore);
-        return Response.success();
     }
 
     @PatchMapping("/{goalId}")
