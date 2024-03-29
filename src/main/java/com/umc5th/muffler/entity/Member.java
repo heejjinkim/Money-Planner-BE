@@ -59,8 +59,9 @@ public class Member extends BaseTimeEntity implements Persistable<String>, UserD
     @Enumerated(EnumType.STRING)
     private Status status = ACTIVE;
 
+    @Builder.Default
     @OneToMany(mappedBy = "member")
-    private List<Goal> goals;
+    private List<Goal> goals = new ArrayList<>();
   
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default

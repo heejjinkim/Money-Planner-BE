@@ -17,4 +17,7 @@ public interface GoalRepository extends JpaRepository<Goal, Long>, GoalRepositor
 
     @Query("SELECT goal from Goal goal join fetch goal.dailyPlans where :date BETWEEN goal.startDate and goal.endDate AND goal.member.id = :memberId")
     Optional<Goal> findByDateBetweenAndDailyPlans(LocalDate date, String memberId);
+
+    @Query("SELECT g FROM Goal g JOIN FETCH g.dailyPlans WHERE g.id = :goalId")
+    Optional<Goal> findByIdAndFetchDailyPlans(Long goalId);
 }

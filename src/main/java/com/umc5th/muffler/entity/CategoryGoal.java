@@ -38,10 +38,11 @@ public class CategoryGoal extends BaseTimeEntity {
     @JoinColumn(name = "goal_id")
     private Goal goal;
 
-    public static CategoryGoal of(Category category, Long budget) {
+    public static CategoryGoal of(Long budget, Category category, Goal goal) {
         return CategoryGoal.builder()
                 .budget(budget)
                 .category(category)
+                .goal(goal)
                 .build();
     }
     public void setGoal(Goal goal) {
