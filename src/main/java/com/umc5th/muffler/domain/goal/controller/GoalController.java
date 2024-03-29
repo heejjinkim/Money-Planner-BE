@@ -45,9 +45,6 @@ public class GoalController {
     @PostMapping
     public Response<Void> create(@RequestBody @Valid GoalCreateRequest request, Authentication authentication) {
         goalCreateService.create(request, authentication.getName());
-        if (!request.getRestore()) {
-            goalService.deleteLeftExpense(authentication.getName(), request.getStartDate(), request.getEndDate());
-        }
         return Response.success();
     }
 

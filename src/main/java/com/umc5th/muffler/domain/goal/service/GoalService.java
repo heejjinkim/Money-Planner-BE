@@ -60,13 +60,6 @@ public class GoalService {
         return expenseRepository.existsExpense(memberId, startDate, endDate);
     }
 
-    public void deleteLeftExpense(String memberId, LocalDate startDate, LocalDate endDate) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
-        List<Long> expenseIds = expenseRepository.findByMemberIdAndDateRange(memberId, startDate, endDate);
-        expenseRepository.deleteByIds(expenseIds);
-    }
-
     public void updateTitle(Long goalId, String title, String memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));

@@ -5,6 +5,7 @@ import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_GOAL_INP
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
+import com.umc5th.muffler.domain.expense.repository.ExpenseRepository;
 import com.umc5th.muffler.domain.goal.dto.CategoryGoalRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
 import com.umc5th.muffler.domain.goal.repository.GoalRepository;
@@ -22,6 +23,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class GoalCreateService {
     private final GoalRepository goalRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+    private final ExpenseRepository expenseRepository;
 
     @Transactional
     public void create(GoalCreateRequest request, String memberId) {
@@ -44,6 +47,7 @@ public class GoalCreateService {
 
         List<CategoryGoal> categoryGoals = createCategoryGoals(request.getCategoryGoals());
         List<DailyPlan> dailyPlans = createDailyPlans(request.getStartDate(), request.getDailyBudgets());
+        handleRestore(request, memberId, dailyPlans);
 
         Goal goal = Goal.of(request.getStartDate(), request.getEndDate(), request.getTitle(), request.getIcon(), request.getTotalBudget(), member);
         goal.setCategoryGoals(categoryGoals);
@@ -51,6 +55,24 @@ public class GoalCreateService {
 
         Goal savedGoal = goalRepository.save(goal);
         member.addGoal(savedGoal);
+    }
+
+    private void handleRestore(GoalCreateRequest request, String memberId, List<DailyPlan> dailyPlans) {
+        if (request.getRestore()){
+            Map<LocalDate, Long> costMap = expenseRepository.findTotalCostDate(memberId, request.getStartDate(),
+                    request.getEndDate());
+            dailyPlans.forEach(dailyPlan -> {
+                if (costMap.containsKey(dailyPlan.getDate())) {
+                    Long cost = costMap.get(dailyPlan.getDate());
+                    dailyPlan.updateTotalCost(cost);
+                }
+            });
+        }
+        else {
+            List<Long> expenseIds = expenseRepository.findByMemberIdAndDateRange(memberId, request.getStartDate()
+                    ,request.getEndDate());
+            expenseRepository.deleteByIds(expenseIds);
+        }
     }
 
     private void validateGoalInput(GoalCreateRequest request, Member member) {
