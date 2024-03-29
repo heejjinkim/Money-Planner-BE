@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class GoalCreateRequest {
-    @NotNull
+    @NotBlank
     private String icon;
     @NotBlank
     private String title;

@@ -77,6 +77,11 @@ public class GoalController {
     @PatchMapping("/{goalId}")
     public Response<Void> updateTitle(@PathVariable Long goalId, @RequestBody @Valid GoalTitleRequest request, Authentication authentication) {
         goalService.updateTitle(goalId, request.getTitle(), authentication.getName());
+    public Response<Void> updateTitleAndIcon(@PathVariable Long goalId, @RequestBody @Valid GoalTitleRequest request, Authentication authentication) {
+        goalService.updateTitleAndIcon(goalId, request.getTitle(), request.getIcon(), authentication.getName());
+        return Response.success();
+    }
+
         return Response.success();
     }
 

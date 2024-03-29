@@ -70,12 +70,13 @@ public class GoalService {
         expenseRepository.deleteByIds(expenseIds);
     }
 
-    public void updateTitle(Long goalId, String title, String memberId) {
+    public void updateTitleAndIcon(Long goalId, String title, String icon, String memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
         Goal goal = goalRepository.findById(goalId)
                 .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
         goal.updateTitle(title);
+        goal.updateIcon(icon);
     }
 
     @Transactional
