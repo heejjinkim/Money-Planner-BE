@@ -208,7 +208,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
         List<Tuple> tuples = queryFactory
                 .select(expense.date, expense.cost.sum())
                 .from(expense)
-                .where(expense.date.between(startDate, endDate))
+                .where(expense.date.between(startDate, endDate), expense.member.id.eq(memberId))
                 .groupBy(expense.date)
                 .fetch();
         for (Tuple tuple : tuples) {
