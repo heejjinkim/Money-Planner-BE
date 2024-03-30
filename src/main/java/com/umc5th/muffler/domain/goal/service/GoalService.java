@@ -61,16 +61,6 @@ public class GoalService {
         return expenseRepository.existsExpense(memberId, startDate, endDate);
     }
 
-    public void restore(String memberId, LocalDate startDate, LocalDate endDate, boolean restore) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
-        if (restore) {
-            return;
-        }
-        List<Long> expenseIds = expenseRepository.findByMemberIdAndDateRange(memberId, startDate, endDate);
-        expenseRepository.deleteByIds(expenseIds);
-    }
-
     public void updateTitleAndIcon(Long goalId, String title, String icon, String memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));

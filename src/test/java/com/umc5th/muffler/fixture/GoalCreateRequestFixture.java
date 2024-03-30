@@ -15,6 +15,7 @@ public class GoalCreateRequestFixture {
                 .totalBudget(10000L)
                 .categoryGoals(List.of(new CategoryGoalRequest(1L, 1000L)))
                 .dailyBudgets(List.of(5000L, 5000L))
+                .restore(true)
                 .build();
     }
 

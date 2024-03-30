@@ -7,6 +7,7 @@ import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND
 
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
 import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanJdbcRepository;
+import com.umc5th.muffler.domain.expense.repository.ExpenseRepository;
 import com.umc5th.muffler.domain.goal.dto.CategoryGoalRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
 import com.umc5th.muffler.domain.goal.repository.GoalJdbcRepository;
@@ -25,6 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,7 @@ public class GoalCreateService {
     private final DailyPlanJdbcRepository dailyPlanJdbcRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+    private final ExpenseRepository expenseRepository;
 
     public void create(GoalCreateRequest request, String memberId) {
         Member member = memberRepository.findByIdAndFetchGoals(memberId)
@@ -52,11 +55,30 @@ public class GoalCreateService {
 
         List<CategoryGoal> categoryGoals = createCategoryGoals(savedGoal, request.getCategoryGoals());
         List<DailyPlan> dailyPlans = createDailyPlans(savedGoal, request.getStartDate(), request.getDailyBudgets());
+        handleRestore(request, memberId, dailyPlans);
 
         goalJdbcRepository.batchInsertCategoryGoals(categoryGoals);
         goalJdbcRepository.batchInsertDailyPlans(dailyPlans);
 
         member.addGoal(savedGoal);
+    }
+
+    private void handleRestore(GoalCreateRequest request, String memberId, List<DailyPlan> dailyPlans) {
+        if (request.getRestore()){
+            Map<LocalDate, Long> costMap = expenseRepository.findTotalCostDate(memberId, request.getStartDate(),
+                    request.getEndDate());
+            dailyPlans.forEach(dailyPlan -> {
+                if (costMap.containsKey(dailyPlan.getDate())) {
+                    Long cost = costMap.get(dailyPlan.getDate());
+                    dailyPlan.updateTotalCost(cost);
+                }
+            });
+        }
+        else {
+            List<Long> expenseIds = expenseRepository.findByMemberIdAndDateRange(memberId, request.getStartDate()
+                    ,request.getEndDate());
+            expenseRepository.deleteByIds(expenseIds);
+        }
     }
 
     public void updateDailyBudgets(String memberId, Long goalId, List<Long> dailyBudgets) {

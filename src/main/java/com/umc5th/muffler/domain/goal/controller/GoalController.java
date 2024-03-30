@@ -66,15 +66,6 @@ public class GoalController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/restore")
-    public Response<Void> restore(Authentication authentication,
-                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                        @RequestParam boolean restore) {
-        goalService.restore(authentication.getName(), startDate, endDate, restore);
-        return Response.success();
-    }
-
     @PatchMapping("/{goalId}")
     public Response<Void> updateTitleAndIcon(@PathVariable Long goalId, @RequestBody @Valid GoalUpdateRequest request, Authentication authentication) {
         goalService.updateTitleAndIcon(goalId, request.getTitle(), request.getIcon(), authentication.getName());

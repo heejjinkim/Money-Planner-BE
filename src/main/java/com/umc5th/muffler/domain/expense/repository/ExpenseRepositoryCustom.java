@@ -19,4 +19,5 @@ public interface ExpenseRepositoryCustom {
     Slice<Expense> findByMemberAndTitleContaining(String memberId, String searchKeyword, LocalDate lastDate, Long lastExpenseId, int size, String order);
     boolean existsExpense(String memberId, LocalDate startDate, LocalDate endDate);
     List<Long> findByMemberIdAndDateRange(String memberId, LocalDate startDate, LocalDate endDate);
+    Map<LocalDate, Long> findTotalCostDate(String memberId, LocalDate startDate, LocalDate endDate);
 }
