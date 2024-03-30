@@ -1,13 +1,16 @@
 package com.umc5th.muffler.domain.goal.service;
 
 import static com.umc5th.muffler.global.response.code.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.umc5th.muffler.global.response.code.ErrorCode.GOAL_NOT_FOUND;
 import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_GOAL_INPUT;
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
+import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanJdbcRepository;
 import com.umc5th.muffler.domain.expense.repository.ExpenseRepository;
 import com.umc5th.muffler.domain.goal.dto.CategoryGoalRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
+import com.umc5th.muffler.domain.goal.repository.GoalJdbcRepository;
 import com.umc5th.muffler.domain.goal.repository.GoalRepository;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
 import com.umc5th.muffler.entity.Category;
@@ -32,28 +35,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class GoalCreateService {
 
     private final GoalRepository goalRepository;
+    private final GoalJdbcRepository goalJdbcRepository;
+    private final DailyPlanJdbcRepository dailyPlanJdbcRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final ExpenseRepository expenseRepository;
 
-    @Transactional
     public void create(GoalCreateRequest request, String memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndFetchGoals(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
         validateGoalInput(request, member);
 
-        List<CategoryGoal> categoryGoals = createCategoryGoals(request.getCategoryGoals());
-        List<DailyPlan> dailyPlans = createDailyPlans(request.getStartDate(), request.getDailyBudgets());
+        Goal goal = Goal.of(request.getStartDate(), request.getEndDate(), request.getTitle(), request.getIcon(), request.getTotalBudget(), member);
+        Goal savedGoal = goalRepository.save(goal);
+
+        List<CategoryGoal> categoryGoals = createCategoryGoals(savedGoal, request.getCategoryGoals());
+        List<DailyPlan> dailyPlans = createDailyPlans(savedGoal, request.getStartDate(), request.getDailyBudgets());
         handleRestore(request, memberId, dailyPlans);
 
-        Goal goal = Goal.of(request.getStartDate(), request.getEndDate(), request.getTitle(), request.getIcon(), request.getTotalBudget(), member);
-        goal.setCategoryGoals(categoryGoals);
-        goal.setDailyPlans(dailyPlans);
+        goalJdbcRepository.batchInsertCategoryGoals(categoryGoals);
+        goalJdbcRepository.batchInsertDailyPlans(dailyPlans);
 
-        Goal savedGoal = goalRepository.save(goal);
         member.addGoal(savedGoal);
     }
 
@@ -75,26 +81,37 @@ public class GoalCreateService {
         }
     }
 
+    public void updateDailyBudgets(String memberId, Long goalId, List<Long> dailyBudgets) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+        Goal goal = goalRepository.findByIdAndFetchDailyPlans(goalId)
+                .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
+        validateDailyPlans(goal.getStartDate(), goal.getEndDate(), dailyBudgets, goal.getTotalBudget());
+
+        List<DailyPlan> dailyPlans = goal.getDailyPlans();
+        dailyPlanJdbcRepository.batchUpdateBudget(dailyPlans, dailyBudgets);
+    }
+
     private void validateGoalInput(GoalCreateRequest request, Member member) {
         validateGoalPeriod(member.getGoals(), request.getStartDate(), request.getEndDate());
         validateCategoryGoals(request.getCategoryGoals(), request.getTotalBudget());
         validateDailyPlans(request.getStartDate(), request.getEndDate(), request.getDailyBudgets(), request.getTotalBudget());
     }
 
-    private List<CategoryGoal> createCategoryGoals(List<CategoryGoalRequest> categoryGoals) {
+    private List<CategoryGoal> createCategoryGoals(Goal goal, List<CategoryGoalRequest> categoryGoals) {
         List<CategoryGoal> result = new ArrayList<>();
         for (CategoryGoalRequest categoryGoal : categoryGoals) {
             Category category = categoryRepository.findById(categoryGoal.getCategoryId())
                     .orElseThrow(() -> new CategoryException(CATEGORY_NOT_FOUND));
 
-            result.add(CategoryGoal.of(category, categoryGoal.getCategoryBudget()));
+            result.add(CategoryGoal.of(categoryGoal.getCategoryBudget(), category, goal));
         }
         return result;
     }
 
-    private List<DailyPlan> createDailyPlans(LocalDate startDate, List<Long> dailyBudgets) {
+    private List<DailyPlan> createDailyPlans(Goal goal, LocalDate startDate, List<Long> dailyBudgets) {
         return IntStream.range(0, dailyBudgets.size())
-                .mapToObj(i -> DailyPlan.of(startDate.plusDays(i), dailyBudgets.get(i)))
+                .mapToObj(i -> DailyPlan.of(startDate.plusDays(i), dailyBudgets.get(i), goal))
                 .collect(Collectors.toList());
     }
 

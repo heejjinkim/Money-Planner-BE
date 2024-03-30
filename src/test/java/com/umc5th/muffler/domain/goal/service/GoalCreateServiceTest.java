@@ -1,7 +1,17 @@
 package com.umc5th.muffler.domain.goal.service;
 
+import static com.umc5th.muffler.global.response.code.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_GOAL_INPUT;
+import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
+import com.umc5th.muffler.domain.goal.repository.GoalJdbcRepository;
 import com.umc5th.muffler.domain.goal.repository.GoalRepository;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
 import com.umc5th.muffler.entity.Category;
@@ -12,19 +22,13 @@ import com.umc5th.muffler.fixture.MemberFixture;
 import com.umc5th.muffler.global.response.exception.CategoryException;
 import com.umc5th.muffler.global.response.exception.GoalException;
 import com.umc5th.muffler.global.response.exception.MemberException;
+import java.time.LocalDate;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static com.umc5th.muffler.global.response.code.ErrorCode.*;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class GoalCreateServiceTest {
@@ -37,6 +41,8 @@ class GoalCreateServiceTest {
     private CategoryRepository categoryRepository;
     @MockBean
     private GoalRepository goalRepository;
+    @MockBean
+    private GoalJdbcRepository goalJdbcRepository;
 
 
     @Test
@@ -45,7 +51,7 @@ class GoalCreateServiceTest {
         Member member = MemberFixture.create();
         Goal mockGoal = mock(Goal.class);
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(member));
         when(categoryRepository.findById(any())).thenReturn(Optional.of(mock(Category.class)));
         when(goalRepository.save(any())).thenReturn(mockGoal);
 
@@ -72,7 +78,7 @@ class GoalCreateServiceTest {
         String memberId = "1";
         GoalCreateRequest request = GoalCreateRequestFixture.create(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 1));
 
-        when(memberRepository.findById(memberId)).thenReturn(Optional.of(mock(Member.class)));
+        when(memberRepository.findByIdAndFetchGoals(memberId)).thenReturn(Optional.of(mock(Member.class)));
 
         assertThatThrownBy(() -> goalCreateService.create(request, memberId))
                 .isInstanceOf(GoalException.class)
@@ -85,7 +91,7 @@ class GoalCreateServiceTest {
         String memberId = "1";
         GoalCreateRequest request = GoalCreateRequestFixture.create(LocalDate.of(2024, 1, 2), LocalDate.of(2024, 1, 1));
 
-        when(memberRepository.findById(memberId)).thenReturn(Optional.of(mock(Member.class)));
+        when(memberRepository.findByIdAndFetchGoals(memberId)).thenReturn(Optional.of(mock(Member.class)));
 
         assertThatThrownBy(() -> goalCreateService.create(request, memberId))
                 .isInstanceOf(GoalException.class)
@@ -98,7 +104,7 @@ class GoalCreateServiceTest {
         GoalCreateRequest request = GoalCreateRequestFixture.create(LocalDate.of(2024, 1, 2), LocalDate.of(2024, 1, 3));
         Member member = MemberFixture.create();
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(member));
 
         assertThatThrownBy(() -> goalCreateService.create(request, member.getId()))
                 .isInstanceOf(GoalException.class)
@@ -111,7 +117,7 @@ class GoalCreateServiceTest {
         GoalCreateRequest request = GoalCreateRequestFixture.createDuplicatedCategoryGoals();
         Member member = MemberFixture.create();
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(member));
 
         assertThatThrownBy(() -> goalCreateService.create(request, member.getId()))
                 .isInstanceOf(GoalException.class)
@@ -124,7 +130,7 @@ class GoalCreateServiceTest {
         GoalCreateRequest request = GoalCreateRequestFixture.createInvalidCategoryBudget();
         Member member = MemberFixture.create();
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(member));
 
         assertThatThrownBy(() -> goalCreateService.create(request, member.getId()))
                 .isInstanceOf(GoalException.class)
@@ -137,7 +143,7 @@ class GoalCreateServiceTest {
         GoalCreateRequest request = GoalCreateRequestFixture.createInvalidDailyPlanPeriod();
         Member member = MemberFixture.create();
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(mock(Member.class)));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(mock(Member.class)));
 
         assertThatThrownBy(() -> goalCreateService.create(request, member.getId()))
                 .isInstanceOf(GoalException.class)
@@ -150,7 +156,7 @@ class GoalCreateServiceTest {
         GoalCreateRequest request = GoalCreateRequestFixture.createInvalidDailyBudgetSum();
         Member member = MemberFixture.create();
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(mock(Member.class)));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(mock(Member.class)));
 
         assertThatThrownBy(() -> goalCreateService.create(request, member.getId()))
                 .isInstanceOf(GoalException.class)
@@ -163,7 +169,7 @@ class GoalCreateServiceTest {
         GoalCreateRequest request = GoalCreateRequestFixture.create();
         Member member = MemberFixture.create();
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(mock(Member.class)));
+        when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(mock(Member.class)));
         when(categoryRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> goalCreateService.create(request, member.getId()))

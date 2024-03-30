@@ -72,6 +72,10 @@ public class Goal extends BaseTimeEntity {
         this.title = title;
     }
 
+    public void updateIcon(String icon) {
+        this.icon = icon;
+    }
+
     public Boolean isPossibleToAlarm(Long sum, Long addition) {
         return sum <= totalBudget && totalBudget < sum + addition;
     }
