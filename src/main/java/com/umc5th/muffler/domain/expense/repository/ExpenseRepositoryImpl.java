@@ -206,7 +206,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
 
         Map<LocalDate, Long> expenseMap = new HashMap<>();
         List<Tuple> tuples = queryFactory
-                .select(expense.date, expense.cost.sum())
+                .select(expense.date, expense.cost.sum().as("totalCost"))
                 .from(expense)
                 .where(expense.date.between(startDate, endDate), expense.member.id.eq(memberId))
                 .groupBy(expense.date)
@@ -214,7 +214,10 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
         for (Tuple tuple : tuples) {
             LocalDate date = tuple.get(expense.date);
             Long sum = tuple.get(expense.cost.sum());
-            expenseMap.put(date, sum);
+            if (date != null) {
+                if (sum == null) sum = 0L;
+                expenseMap.put(date, sum);
+            }
         }
         return expenseMap;
     }
