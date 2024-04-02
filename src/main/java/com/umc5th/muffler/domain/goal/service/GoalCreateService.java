@@ -71,17 +71,65 @@ public class GoalCreateService {
         dailyPlanJdbcRepository.batchInsert(dailyPlans);
     }
 
+    public void updateCategoryGoals(String memberId, Long goalId, List<CategoryGoalRequest> request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+        Goal goal = goalRepository.findByIdAndFetchCategoryGoals(memberId, goalId)
+                .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
+        validateCategoryGoals(request, goal.getTotalBudget());
+
+        List<CategoryGoal> categoryGoals = goal.getCategoryGoals();
+
+        List<CategoryGoal> toInsert = new ArrayList<>();
+        List<CategoryGoal> toUpdate = new ArrayList<>();
+        getInsertAndUpdate(request, categoryGoals, goal, toUpdate, toInsert);
+
+        List<Long> toDelete = getDelete(request, categoryGoals);
+
+        categoryGoalJdbcRepository.batchInsert(toInsert);
+        categoryGoalJdbcRepository.batchUpdateBudget(toUpdate);
+        categoryGoalRepository.deleteByIds(toDelete);
     }
 
     public void updateDailyBudgets(String memberId, Long goalId, List<Long> dailyBudgets) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
-        Goal goal = goalRepository.findByIdAndFetchDailyPlans(goalId)
+        Goal goal = goalRepository.findByIdAndFetchDailyPlans(memberId, goalId)
                 .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
         validateDailyPlans(goal.getStartDate(), goal.getEndDate(), dailyBudgets, goal.getTotalBudget());
 
         List<DailyPlan> dailyPlans = goal.getDailyPlans();
         dailyPlanJdbcRepository.batchUpdateBudget(dailyPlans, dailyBudgets);
+    }
+
+    private void getInsertAndUpdate(List<CategoryGoalRequest> request, List<CategoryGoal> categoryGoals, Goal goal,
+                                    List<CategoryGoal> toUpdate, List<CategoryGoal> toInsert) {
+        Map<Long, CategoryGoal> categoryGoalMap = categoryGoals.stream()
+                .collect(Collectors.toMap(CategoryGoal::getId, Function.identity()));
+
+        for (CategoryGoalRequest req : request) {
+            if (categoryGoalMap.containsKey(req.getCategoryGoalId())) {
+                CategoryGoal categoryGoal = categoryGoalMap.get(req.getCategoryGoalId());
+                if (!Objects.equals(categoryGoal.getBudget(), req.getCategoryBudget())) {
+                    categoryGoal.setBudget(req.getCategoryBudget());
+                    toUpdate.add(categoryGoal);
+                }
+                continue;
+            }
+
+            Category category = categoryRepository.findById(req.getCategoryId())
+                    .orElseThrow(() -> new CategoryException(CATEGORY_NOT_FOUND));
+            toInsert.add(CategoryGoal.of(req.getCategoryBudget(), category, goal));
+        }
+    }
+
+    private List<Long> getDelete(List<CategoryGoalRequest> request, List<CategoryGoal> categoryGoals) {
+        Set<Long> requestIds = request.stream()
+                .map(CategoryGoalRequest::getCategoryGoalId).collect(Collectors.toSet());
+
+        return categoryGoals.stream()
+                .filter(cg -> !requestIds.contains(cg.getId()))
+                .map(CategoryGoal::getId).collect(Collectors.toList());
     }
 
     private void handleRestore(GoalCreateRequest request, String memberId, List<DailyPlan> dailyPlans) {

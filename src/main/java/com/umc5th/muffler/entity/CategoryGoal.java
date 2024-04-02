@@ -45,6 +45,11 @@ public class CategoryGoal extends BaseTimeEntity {
                 .goal(goal)
                 .build();
     }
+
+    public void setBudget(Long budget) {
+        this.budget = budget;
+    }
+
     public void setGoal(Goal goal) {
         this.goal = goal;
     }

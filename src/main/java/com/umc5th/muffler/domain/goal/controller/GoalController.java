@@ -1,5 +1,6 @@
 package com.umc5th.muffler.domain.goal.controller;
 
+import com.umc5th.muffler.domain.goal.dto.CategoryGoalsRequest;
 import com.umc5th.muffler.domain.goal.dto.DailyBudgetsRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalConverter;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
@@ -69,6 +70,12 @@ public class GoalController {
     @PatchMapping("/{goalId}")
     public Response<Void> updateTitleAndIcon(@PathVariable Long goalId, @RequestBody @Valid GoalUpdateRequest request, Authentication authentication) {
         goalService.updateTitleAndIcon(goalId, request.getTitle(), request.getIcon(), authentication.getName());
+        return Response.success();
+    }
+
+    @PatchMapping("/{goalId}/category-goal")
+    public Response<Void> updateCategoryGoals(@PathVariable Long goalId, @RequestBody @Valid CategoryGoalsRequest request, Authentication authentication) {
+        goalCreateService.updateCategoryGoals(authentication.getName(), goalId, request.getCategoryGoals());
         return Response.success();
     }
 

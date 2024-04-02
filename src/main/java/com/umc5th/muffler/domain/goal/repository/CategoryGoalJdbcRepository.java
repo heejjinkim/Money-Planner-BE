@@ -34,4 +34,22 @@ public class CategoryGoalJdbcRepository {
         });
     }
 
+    public void batchUpdateBudget(List<CategoryGoal> categoryGoals) {
+        String sql = "UPDATE category_goal SET budget = ? WHERE id = ?";
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                CategoryGoal categoryGoal = categoryGoals.get(i);
+                Long budget = categoryGoal.getBudget();
+                ps.setLong(1, budget);
+                ps.setLong(2, categoryGoal.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return categoryGoals.size();
+            }
+        });
+    }
 }
