@@ -91,7 +91,7 @@ class GoalServiceTest {
         when(mockGoal.getMember()).thenReturn(mockMember);
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
-        when(goalRepository.findByIdAndMemberId(goalId, memberId)).thenReturn(Optional.of(mockGoal));
+        when(goalRepository.findByIdAndMemberId(memberId, goalId)).thenReturn(Optional.of(mockGoal));
 
         goalService.delete(goalId, memberId);
 

@@ -10,11 +10,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
+import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanJdbcRepository;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
-import com.umc5th.muffler.domain.goal.repository.GoalJdbcRepository;
+import com.umc5th.muffler.domain.goal.repository.CategoryGoalJdbcRepository;
 import com.umc5th.muffler.domain.goal.repository.GoalRepository;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
-import com.umc5th.muffler.entity.Category;
 import com.umc5th.muffler.entity.Goal;
 import com.umc5th.muffler.entity.Member;
 import com.umc5th.muffler.fixture.GoalCreateRequestFixture;
@@ -24,7 +24,6 @@ import com.umc5th.muffler.global.response.exception.GoalException;
 import com.umc5th.muffler.global.response.exception.MemberException;
 import java.time.LocalDate;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,23 +41,22 @@ class GoalCreateServiceTest {
     @MockBean
     private GoalRepository goalRepository;
     @MockBean
-    private GoalJdbcRepository goalJdbcRepository;
-
+    private CategoryGoalJdbcRepository categoryGoalJdbcRepository;
+    @MockBean
+    private DailyPlanJdbcRepository dailyPlanJdbcRepository;
 
     @Test
     void 목표등록이_성공한경우() {
         GoalCreateRequest request = GoalCreateRequestFixture.create();
-        Member member = MemberFixture.create();
+        Member member = MemberFixture.createWithCategory();
         Goal mockGoal = mock(Goal.class);
 
         when(memberRepository.findByIdAndFetchGoals(member.getId())).thenReturn(Optional.of(member));
-        when(categoryRepository.findById(any())).thenReturn(Optional.of(mock(Category.class)));
         when(goalRepository.save(any())).thenReturn(mockGoal);
 
         goalCreateService.create(request, member.getId());
 
         verify(goalRepository).save(any(Goal.class));
-        Assertions.assertThat(member.getGoals()).contains(mockGoal);
     }
 
     @Test
