@@ -6,12 +6,6 @@ import com.umc5th.muffler.entity.base.BaseTimeEntity;
 import com.umc5th.muffler.entity.constant.Role;
 import com.umc5th.muffler.entity.constant.SocialType;
 import com.umc5th.muffler.entity.constant.Status;
-import org.springframework.data.domain.Persistable;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,13 +15,21 @@ import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -62,7 +64,7 @@ public class Member extends BaseTimeEntity implements Persistable<String>, UserD
     @Builder.Default
     @OneToMany(mappedBy = "member")
     private List<Goal> goals = new ArrayList<>();
-  
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Category> categories = new ArrayList<>();
@@ -80,13 +82,6 @@ public class Member extends BaseTimeEntity implements Persistable<String>, UserD
         this.profileImg = profileImg;
     }
 
-    public void addGoal(Goal goal) {
-        this.goals.add(goal);
-    }
-
-    public void removeGoal(Goal goal) {
-        this.goals.remove(goal);
-    }
     public void addCategory(Category category) {
         category.setMember(this);
         this.categories.add(category);

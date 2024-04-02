@@ -1,8 +1,6 @@
 package com.umc5th.muffler.domain.goal.repository;
 
 import com.umc5th.muffler.entity.CategoryGoal;
-import com.umc5th.muffler.entity.DailyPlan;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
@@ -13,11 +11,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class GoalJdbcRepository {
+public class CategoryGoalJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public void batchInsertCategoryGoals(List<CategoryGoal> categoryGoals) {
+    public void batchInsert(List<CategoryGoal> categoryGoals) {
         String sql = "INSERT INTO category_goal (budget, category_id, goal_id) VALUES (?, ?, ?)";
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
@@ -36,25 +34,22 @@ public class GoalJdbcRepository {
         });
     }
 
-    public void batchInsertDailyPlans(List<DailyPlan> dailyPlans) {
-        String sql = "INSERT INTO daily_plan (date, budget, is_zero_day, total_cost, goal_id) VALUES (?, ?, ?, ?, ?)";
+    public void batchUpdateBudget(List<CategoryGoal> categoryGoals) {
+        String sql = "UPDATE category_goal SET budget = ? WHERE id = ?";
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                DailyPlan dailyPlan = dailyPlans.get(i);
-                ps.setDate(1, Date.valueOf(dailyPlan.getDate()));
-                ps.setLong(2, dailyPlan.getBudget());
-                ps.setBoolean(3, dailyPlan.getIsZeroDay());
-                ps.setLong(4, dailyPlan.getTotalCost());
-                ps.setLong(5, dailyPlan.getGoal().getId());
+                CategoryGoal categoryGoal = categoryGoals.get(i);
+                Long budget = categoryGoal.getBudget();
+                ps.setLong(1, budget);
+                ps.setLong(2, categoryGoal.getId());
             }
 
             @Override
             public int getBatchSize() {
-                return dailyPlans.size();
+                return categoryGoals.size();
             }
         });
     }
-
 }

@@ -8,6 +8,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CategoryGoalRequest {
     @NotNull
+    private Long categoryGoalId;
+    @NotNull
     private Long categoryId;
     @NotNull
     private Long categoryBudget;
