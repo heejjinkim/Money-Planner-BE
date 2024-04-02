@@ -34,6 +34,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final AppleService appleService;
+    private final KakaoService kakaoService;
     private final JwtTokenUtils jwtTokenUtils;
     private final BatchUpdateCategoryRepository batchUpdateCategoryRepository;
     private final EntityManager entityManager;
@@ -78,6 +79,9 @@ public class MemberService {
     private String socialLogin(LoginRequest request) {
         if (request.getSocialType() == SocialType.APPLE) {
             return appleService.login(request);
+        }
+        if (request.getSocialType() == SocialType.KAKAO) {
+            return kakaoService.login(request.getIdToken());
         }
         throw new CommonException(BAD_REQUEST, "지원하지 않는 소셜 로그인 입니다.");
     }

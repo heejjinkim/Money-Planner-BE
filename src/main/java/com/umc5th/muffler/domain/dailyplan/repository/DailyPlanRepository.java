@@ -5,8 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface DailyPlanRepository extends JpaRepository<DailyPlan, Long>, DailyPlanRepositoryCustom {
@@ -23,4 +25,12 @@ public interface DailyPlanRepository extends JpaRepository<DailyPlan, Long>, Dai
             + "WHERE dailyPlan.date = :date "
             + "AND dailyPlan.goal.member.id = :memberId")
     Optional<DailyPlan> findDailyPlanWithGoalByDateAndMember(String memberId, LocalDate date);
+
+    @Query("SELECT dp.id FROM DailyPlan dp WHERE dp.goal.id = :goalId")
+    List<Long> findByGoalId(Long goalId);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM DailyPlan dp WHERE dp.id in :ids")
+    void deleteByIds(List<Long> ids);
 }

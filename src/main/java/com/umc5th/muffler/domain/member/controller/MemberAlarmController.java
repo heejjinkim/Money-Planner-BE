@@ -1,18 +1,14 @@
 package com.umc5th.muffler.domain.member.controller;
 
 import com.umc5th.muffler.domain.member.dto.AlarmAgreeUpdateRequest;
+import com.umc5th.muffler.domain.member.dto.AlarmAgreementResponse;
 import com.umc5th.muffler.domain.member.dto.TokenEnrollRequest;
 import com.umc5th.muffler.domain.member.service.MemberAlarmService;
 import com.umc5th.muffler.global.response.Response;
 import java.security.Principal;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,5 +32,10 @@ public class MemberAlarmController {
     public Response<Void> deleteAlarm(Principal principal) {
         memberAlarmService.deleteAlarmToken(principal.getName());
         return Response.success();
+    }
+
+    @GetMapping("/agree")
+    public Response<AlarmAgreementResponse> getAlarmAgreement(Principal principal) {
+        return Response.success(memberAlarmService.getAlarmAgreement(principal.getName()));
     }
 }

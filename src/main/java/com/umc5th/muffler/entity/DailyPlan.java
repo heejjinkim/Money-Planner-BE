@@ -57,10 +57,11 @@ public class DailyPlan extends BaseTimeEntity {
     @Column(length = 1024)
     private String rateMemo;
 
-    public static DailyPlan of(LocalDate date, Long budget) {
+    public static DailyPlan of(LocalDate date, Long budget, Goal goal) {
         return DailyPlan.builder()
                 .date(date)
                 .budget(budget)
+                .goal(goal)
                 .build();
     }
 

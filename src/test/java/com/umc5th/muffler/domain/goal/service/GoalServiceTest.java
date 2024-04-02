@@ -1,7 +1,6 @@
 package com.umc5th.muffler.domain.goal.service;
 
 import static com.umc5th.muffler.global.response.code.ErrorCode.GOAL_NOT_FOUND;
-import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_PERMISSION;
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -13,10 +12,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanRepository;
 import com.umc5th.muffler.domain.goal.dto.GoalGetResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalInfo;
 import com.umc5th.muffler.domain.goal.dto.GoalPreviewResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalReportResponse;
+import com.umc5th.muffler.domain.goal.repository.CategoryGoalRepository;
 import com.umc5th.muffler.domain.goal.repository.GoalRepository;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
 import com.umc5th.muffler.entity.CategoryGoal;
@@ -27,7 +28,6 @@ import com.umc5th.muffler.fixture.CategoryGoalFixture;
 import com.umc5th.muffler.fixture.DailyPlanFixture;
 import com.umc5th.muffler.fixture.GoalFixture;
 import com.umc5th.muffler.fixture.MemberFixture;
-import com.umc5th.muffler.global.response.exception.CommonException;
 import com.umc5th.muffler.global.response.exception.GoalException;
 import com.umc5th.muffler.global.response.exception.MemberException;
 import com.umc5th.muffler.global.util.DateTimeProvider;
@@ -53,16 +53,20 @@ class GoalServiceTest {
     @MockBean
     private GoalRepository goalRepository;
     @MockBean
+    private CategoryGoalRepository categoryGoalRepository;
+    @MockBean
+    private DailyPlanRepository dailyPlanRepository;
+    @MockBean
     private DateTimeProvider dateTimeProvider;
 
     @Test
     void 전체_목표조회가_성공한경우() {
         String memberId = "1";
-        when(memberRepository.findById(memberId)).thenReturn(Optional.of(mock(Member.class)));
+        when(memberRepository.findByIdAndFetchGoals(memberId)).thenReturn(Optional.of(mock(Member.class)));
 
         assertThatCode(() -> goalService.getGoals(memberId)).doesNotThrowAnyException();
 
-        verify(memberRepository).findById(memberId);
+        verify(memberRepository).findByIdAndFetchGoals(memberId);
     }
 
     @Test
@@ -87,12 +91,11 @@ class GoalServiceTest {
         when(mockGoal.getMember()).thenReturn(mockMember);
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
-        when(goalRepository.findById(goalId)).thenReturn(Optional.of(mockGoal));
+        when(goalRepository.findByIdAndMemberId(memberId, goalId)).thenReturn(Optional.of(mockGoal));
 
         goalService.delete(goalId, memberId);
 
-        verify(goalRepository).delete(mockGoal);
-        verify(mockMember).removeGoal(mockGoal);
+        verify(goalRepository).deleteByIdAndMemberId(goalId, memberId);
     }
 
     @Test
@@ -135,8 +138,8 @@ class GoalServiceTest {
         when(goalRepository.findById(goalId)).thenReturn(Optional.of(mockGoal));
 
         assertThatThrownBy(() -> goalService.delete(goalId, memberId))
-                .isInstanceOf(CommonException.class)
-                .hasFieldOrPropertyWithValue("errorCode", INVALID_PERMISSION);
+                .isInstanceOf(GoalException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GOAL_NOT_FOUND);
     }
 
     @Test

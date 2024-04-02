@@ -1,12 +1,17 @@
 package com.umc5th.muffler.domain.goal.service;
 
 import static com.umc5th.muffler.global.response.code.ErrorCode.CATEGORY_NOT_FOUND;
+import static com.umc5th.muffler.global.response.code.ErrorCode.GOAL_NOT_FOUND;
 import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_GOAL_INPUT;
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.umc5th.muffler.domain.category.repository.CategoryRepository;
+import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanJdbcRepository;
+import com.umc5th.muffler.domain.expense.repository.ExpenseRepository;
 import com.umc5th.muffler.domain.goal.dto.CategoryGoalRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
+import com.umc5th.muffler.domain.goal.repository.CategoryGoalJdbcRepository;
+import com.umc5th.muffler.domain.goal.repository.CategoryGoalRepository;
 import com.umc5th.muffler.domain.goal.repository.GoalRepository;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
 import com.umc5th.muffler.entity.Category;
@@ -22,6 +27,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -30,27 +40,113 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class GoalCreateService {
 
     private final GoalRepository goalRepository;
+    private final CategoryGoalRepository categoryGoalRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+    private final ExpenseRepository expenseRepository;
+    private final CategoryGoalJdbcRepository categoryGoalJdbcRepository;
+    private final DailyPlanJdbcRepository dailyPlanJdbcRepository;
 
-    @Transactional
     public void create(GoalCreateRequest request, String memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndFetchGoals(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+        memberRepository.findByIdAndFetchCategories(memberId);
         validateGoalInput(request, member);
 
-        List<CategoryGoal> categoryGoals = createCategoryGoals(request.getCategoryGoals());
-        List<DailyPlan> dailyPlans = createDailyPlans(request.getStartDate(), request.getDailyBudgets());
-
         Goal goal = Goal.of(request.getStartDate(), request.getEndDate(), request.getTitle(), request.getIcon(), request.getTotalBudget(), member);
-        goal.setCategoryGoals(categoryGoals);
-        goal.setDailyPlans(dailyPlans);
-
         Goal savedGoal = goalRepository.save(goal);
-        member.addGoal(savedGoal);
+
+        List<CategoryGoal> categoryGoals = createCategoryGoals(member.getCategories(), savedGoal, request.getCategoryGoals());
+        List<DailyPlan> dailyPlans = createDailyPlans(savedGoal, request.getStartDate(), request.getDailyBudgets());
+
+        if (request.getCanRestore()) {
+            handleRestore(request, memberId, dailyPlans);
+        }
+
+        categoryGoalJdbcRepository.batchInsert(categoryGoals);
+        dailyPlanJdbcRepository.batchInsert(dailyPlans);
+    }
+
+    public void updateCategoryGoals(String memberId, Long goalId, List<CategoryGoalRequest> request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+        Goal goal = goalRepository.findByIdAndFetchCategoryGoals(memberId, goalId)
+                .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
+        validateCategoryGoals(request, goal.getTotalBudget());
+
+        List<CategoryGoal> categoryGoals = goal.getCategoryGoals();
+
+        List<CategoryGoal> toInsert = new ArrayList<>();
+        List<CategoryGoal> toUpdate = new ArrayList<>();
+        getInsertAndUpdate(request, categoryGoals, goal, toUpdate, toInsert);
+
+        List<Long> toDelete = getDelete(request, categoryGoals);
+
+        categoryGoalJdbcRepository.batchInsert(toInsert);
+        categoryGoalJdbcRepository.batchUpdateBudget(toUpdate);
+        categoryGoalRepository.deleteByIds(toDelete);
+    }
+
+    public void updateDailyBudgets(String memberId, Long goalId, List<Long> dailyBudgets) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+        Goal goal = goalRepository.findByIdAndFetchDailyPlans(memberId, goalId)
+                .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
+        validateDailyPlans(goal.getStartDate(), goal.getEndDate(), dailyBudgets, goal.getTotalBudget());
+
+        List<DailyPlan> dailyPlans = goal.getDailyPlans();
+        dailyPlanJdbcRepository.batchUpdateBudget(dailyPlans, dailyBudgets);
+    }
+
+    private void getInsertAndUpdate(List<CategoryGoalRequest> request, List<CategoryGoal> categoryGoals, Goal goal,
+                                    List<CategoryGoal> toUpdate, List<CategoryGoal> toInsert) {
+        Map<Long, CategoryGoal> categoryGoalMap = categoryGoals.stream()
+                .collect(Collectors.toMap(CategoryGoal::getId, Function.identity()));
+
+        for (CategoryGoalRequest req : request) {
+            if (categoryGoalMap.containsKey(req.getCategoryGoalId())) {
+                CategoryGoal categoryGoal = categoryGoalMap.get(req.getCategoryGoalId());
+                if (!Objects.equals(categoryGoal.getBudget(), req.getCategoryBudget())) {
+                    categoryGoal.setBudget(req.getCategoryBudget());
+                    toUpdate.add(categoryGoal);
+                }
+                continue;
+            }
+
+            Category category = categoryRepository.findById(req.getCategoryId())
+                    .orElseThrow(() -> new CategoryException(CATEGORY_NOT_FOUND));
+            toInsert.add(CategoryGoal.of(req.getCategoryBudget(), category, goal));
+        }
+    }
+
+    private List<Long> getDelete(List<CategoryGoalRequest> request, List<CategoryGoal> categoryGoals) {
+        Set<Long> requestIds = request.stream()
+                .map(CategoryGoalRequest::getCategoryGoalId).collect(Collectors.toSet());
+
+        return categoryGoals.stream()
+                .filter(cg -> !requestIds.contains(cg.getId()))
+                .map(CategoryGoal::getId).collect(Collectors.toList());
+    }
+
+    private void handleRestore(GoalCreateRequest request, String memberId, List<DailyPlan> dailyPlans) {
+        if (request.getRestore()) {
+            Map<LocalDate, Long> costMap = expenseRepository
+                    .findTotalCostDate(memberId, request.getStartDate(), request.getEndDate());
+
+            dailyPlans.forEach(dailyPlan -> {
+                if (costMap.containsKey(dailyPlan.getDate())) {
+                    dailyPlan.updateTotalCost(costMap.get(dailyPlan.getDate()));
+                }});
+            return;
+        }
+
+        List<Long> expenseIds = expenseRepository
+                .findByMemberIdAndDateRange(memberId, request.getStartDate(), request.getEndDate());
+        expenseRepository.deleteByIds(expenseIds);
     }
 
     private void validateGoalInput(GoalCreateRequest request, Member member) {
@@ -59,20 +155,23 @@ public class GoalCreateService {
         validateDailyPlans(request.getStartDate(), request.getEndDate(), request.getDailyBudgets(), request.getTotalBudget());
     }
 
-    private List<CategoryGoal> createCategoryGoals(List<CategoryGoalRequest> categoryGoals) {
+    private List<CategoryGoal> createCategoryGoals(List<Category> categories, Goal goal, List<CategoryGoalRequest> categoryGoals) {
         List<CategoryGoal> result = new ArrayList<>();
+        Map<Long, Category> categoryMap = categories.stream()
+                .collect(Collectors.toMap(Category::getId, Function.identity()));
+
         for (CategoryGoalRequest categoryGoal : categoryGoals) {
-            Category category = categoryRepository.findById(categoryGoal.getCategoryId())
+            Category category = Optional.ofNullable(categoryMap.get(categoryGoal.getCategoryId()))
                     .orElseThrow(() -> new CategoryException(CATEGORY_NOT_FOUND));
 
-            result.add(CategoryGoal.of(category, categoryGoal.getCategoryBudget()));
+            result.add(CategoryGoal.of(categoryGoal.getCategoryBudget(), category, goal));
         }
         return result;
     }
 
-    private List<DailyPlan> createDailyPlans(LocalDate startDate, List<Long> dailyBudgets) {
+    private List<DailyPlan> createDailyPlans(Goal goal, LocalDate startDate, List<Long> dailyBudgets) {
         return IntStream.range(0, dailyBudgets.size())
-                .mapToObj(i -> DailyPlan.of(startDate.plusDays(i), dailyBudgets.get(i)))
+                .mapToObj(i -> DailyPlan.of(startDate.plusDays(i), dailyBudgets.get(i), goal))
                 .collect(Collectors.toList());
     }
 

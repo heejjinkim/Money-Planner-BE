@@ -64,6 +64,7 @@ spring:
             enable: true
 jwt:
   secret: testtesttesttesttesttesttesttest
+  aud: testAUD
 server:
   servlet:
     encoding:

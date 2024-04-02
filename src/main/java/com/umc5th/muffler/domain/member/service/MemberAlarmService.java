@@ -1,10 +1,12 @@
 package com.umc5th.muffler.domain.member.service;
 
 import com.umc5th.muffler.domain.member.dto.AlarmAgreeUpdateRequest;
+import com.umc5th.muffler.domain.member.dto.AlarmAgreementResponse;
 import com.umc5th.muffler.domain.member.dto.MemberConverter;
 import com.umc5th.muffler.domain.member.dto.TokenEnrollRequest;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
 import com.umc5th.muffler.entity.Member;
+import com.umc5th.muffler.entity.MemberAlarm;
 import com.umc5th.muffler.global.response.code.ErrorCode;
 import com.umc5th.muffler.global.response.exception.MemberException;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +38,20 @@ public class MemberAlarmService {
         Member member = memberRepository.findMemberFetchAlarm(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
         member.deleteToken();
+    }
+
+    @Transactional(readOnly = true)
+    public AlarmAgreementResponse getAlarmAgreement(String memberId) {
+        Member member = memberRepository.findMemberFetchAlarm(memberId)
+                .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
+
+        MemberAlarm memberAlarm = member.getMemberAlarm();
+
+        return AlarmAgreementResponse.builder()
+                .isTodayEnrollRemindAgree(memberAlarm.getIsTodayEnrollRemindAgree())
+                .isDailyPlanRemindAgree(memberAlarm.getIsDailyPlanRemindAgree())
+                .isGoalEndReportRemindAgree(memberAlarm.getIsGoalEndReportRemindAgree())
+                .isYesterdayEnrollRemindAgree(memberAlarm.getIsYesterdayEnrollRemindAgree())
+                .build();
     }
 }
