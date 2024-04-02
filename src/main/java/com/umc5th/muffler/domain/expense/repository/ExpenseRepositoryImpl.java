@@ -200,6 +200,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
                         .and(expense.date.between(startDate, endDate)))
                 .fetch();
     }
+
     @Override
     public Map<LocalDate, Long> findTotalCostDate(String memberId, LocalDate startDate, LocalDate endDate) {
         QExpense expense = QExpense.expense;
@@ -221,8 +222,6 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
         }
         return expenseMap;
     }
-
-
 
     private BooleanExpression searchTitle(String searchKeyword){
         if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {

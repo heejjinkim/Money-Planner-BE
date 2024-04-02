@@ -14,4 +14,6 @@ public interface MemberRepository extends JpaRepository<Member, String>, MemberR
     Optional<Member> findMemberFetchAlarm(@Param("memberId") String memberId);
     @Query("SELECT m FROM Member m LEFT JOIN FETCH m.goals WHERE m.id = :memberId")
     Optional<Member> findByIdAndFetchGoals(String memberId);
+    @Query("SELECT m FROM Member m LEFT JOIN FETCH m.categories WHERE m.id = :memberId")
+    Optional<Member> findByIdAndFetchCategories(String memberId);
 }

@@ -64,7 +64,7 @@ public class GoalService {
     public void updateTitleAndIcon(Long goalId, String title, String icon, String memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
-        Goal goal = goalRepository.findByIdAndMemberId(goalId, memberId)
+        Goal goal = goalRepository.findByIdAndMemberId(memberId, goalId)
                 .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
         goal.updateTitle(title);
         goal.updateIcon(icon);
@@ -74,7 +74,7 @@ public class GoalService {
     public void delete(Long goalId, String memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
-        Goal goal = goalRepository.findByIdAndMemberId(goalId, memberId)
+        Goal goal = goalRepository.findByIdAndMemberId(memberId, goalId)
                 .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
 
         List<Long> categoryGoalIds = categoryGoalRepository.findByGoalId(goalId);
