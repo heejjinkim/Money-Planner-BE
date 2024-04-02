@@ -92,6 +92,7 @@ server:
 
 logging.level:
   org.hibernate.SQL: debug
+#  org.hibernate.type: trace  # 파라미터 로그용
 
 thread:
   pool:
