@@ -1,16 +1,15 @@
 package com.umc5th.muffler.domain.goal.dto;
 
+import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
-public class CategoryGoalRequest {
+public class DailyBudgetsRequest {
     @NotNull
-    private Long categoryGoalId;
-    @NotNull
-    private Long categoryId;
-    @NotNull
-    private Long categoryBudget;
+    private List<Long> dailyBudgets;
 }

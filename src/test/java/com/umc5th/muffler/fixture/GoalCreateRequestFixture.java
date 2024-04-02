@@ -13,8 +13,9 @@ public class GoalCreateRequestFixture {
                 .title("title")
                 .icon("icon")
                 .totalBudget(10000L)
-                .categoryGoals(List.of(new CategoryGoalRequest(1L, 1000L)))
+                .categoryGoals(List.of(new CategoryGoalRequest(-1L, 1L, 1000L)))
                 .dailyBudgets(List.of(5000L, 5000L))
+                .canRestore(false)
                 .build();
     }
 
@@ -25,7 +26,7 @@ public class GoalCreateRequestFixture {
                 .title("title")
                 .icon("icon")
                 .totalBudget(10000L)
-                .categoryGoals(List.of(new CategoryGoalRequest(1L, 1000L)))
+                .categoryGoals(List.of(new CategoryGoalRequest(-1L, 1L, 1000L)))
                 .dailyBudgets(List.of(5000L, 5000L))
                 .build();
     }
@@ -37,7 +38,7 @@ public class GoalCreateRequestFixture {
                 .title("title")
                 .icon("icon")
                 .totalBudget(10000L)
-                .categoryGoals(List.of(new CategoryGoalRequest(1L, 1000L), new CategoryGoalRequest(1L, 1000L)))
+                .categoryGoals(List.of(new CategoryGoalRequest(-1L, 1L, 1000L), new CategoryGoalRequest(-1L, 1L, 1000L)))
                 .dailyBudgets(List.of(5000L, 5000L))
                 .build();
     }
@@ -49,7 +50,7 @@ public class GoalCreateRequestFixture {
                 .title("title")
                 .icon("icon")
                 .totalBudget(10000L)
-                .categoryGoals(List.of(new CategoryGoalRequest(1L, 20000L)))
+                .categoryGoals(List.of(new CategoryGoalRequest(-1L, 1L, 20000L)))
                 .dailyBudgets(List.of(5000L, 5000L))
                 .build();
     }
@@ -61,7 +62,7 @@ public class GoalCreateRequestFixture {
                 .title("title")
                 .icon("icon")
                 .totalBudget(10000L)
-                .categoryGoals(List.of(new CategoryGoalRequest(1L, 1000L)))
+                .categoryGoals(List.of(new CategoryGoalRequest(-1L, 1L, 1000L)))
                 .dailyBudgets(List.of(10000L))
                 .build();
     }
@@ -73,7 +74,7 @@ public class GoalCreateRequestFixture {
                 .title("title")
                 .icon("icon")
                 .totalBudget(10000L)
-                .categoryGoals(List.of(new CategoryGoalRequest(1L, 1000L)))
+                .categoryGoals(List.of(new CategoryGoalRequest(-1L, 1L, 1000L)))
                 .dailyBudgets(List.of(5000L, 1000L))
                 .build();
     }

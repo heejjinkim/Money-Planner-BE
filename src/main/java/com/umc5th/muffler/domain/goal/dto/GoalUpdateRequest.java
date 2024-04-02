@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class GoalTitleRequest {
+public class GoalUpdateRequest {
     @NotBlank
     private String title;
+    @NotBlank
+    private String icon;
 }

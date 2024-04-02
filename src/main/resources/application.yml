@@ -81,6 +81,15 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+  tomcat:
+    basedir: .
+    access log:
+      enabled: true
+      pattern: "[%{yyyy-MM-dd HH:mm:ss.SSS}t]%{Referer}i(%a) %r -> [%s/%b/%Dms] | \t%{User-Agent}i"
+      directory: logs
+      encoding: utf-8
+      max-days: 60
+
 logging.level:
   org.hibernate.SQL: debug
 

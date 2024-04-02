@@ -2,6 +2,7 @@ package com.umc5th.muffler.domain.goal.dto;
 
 import java.time.LocalDate;
 import java.util.List;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class GoalCreateRequest {
-    @NotNull
+    @NotBlank
     private String icon;
     @NotBlank
     private String title;
@@ -26,8 +27,13 @@ public class GoalCreateRequest {
     private Long totalBudget;
 
     @NotNull
+    @Valid
     private List<CategoryGoalRequest> categoryGoals;
 
     @NotNull
     private List<Long> dailyBudgets;
+
+    @NotNull
+    private Boolean canRestore;
+    private Boolean restore;
 }

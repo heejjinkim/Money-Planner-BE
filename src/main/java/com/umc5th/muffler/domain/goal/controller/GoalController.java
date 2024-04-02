@@ -1,5 +1,7 @@
 package com.umc5th.muffler.domain.goal.controller;
 
+import com.umc5th.muffler.domain.goal.dto.CategoryGoalsRequest;
+import com.umc5th.muffler.domain.goal.dto.DailyBudgetsRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalConverter;
 import com.umc5th.muffler.domain.goal.dto.GoalCreateRequest;
 import com.umc5th.muffler.domain.goal.dto.GoalGetResponse;
@@ -8,7 +10,7 @@ import com.umc5th.muffler.domain.goal.dto.GoalListResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalPreviewResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalPreviousResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalReportResponse;
-import com.umc5th.muffler.domain.goal.dto.GoalTitleRequest;
+import com.umc5th.muffler.domain.goal.dto.GoalUpdateRequest;
 import com.umc5th.muffler.domain.goal.service.GoalCreateService;
 import com.umc5th.muffler.domain.goal.service.GoalService;
 import com.umc5th.muffler.entity.Goal;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,9 +56,32 @@ public class GoalController {
         return Response.success(GoalConverter.getGoalPreviousResponse(goals));
     }
 
+    @GetMapping("/restore")
+    public ResponseEntity<Void> checkRestore(Authentication authentication,
+                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+        boolean isExists = goalService.checkRestore(authentication.getName(), startDate, endDate);
+        if (isExists) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{goalId}")
-    public Response<Void> updateTitle(@PathVariable Long goalId, @RequestBody @Valid GoalTitleRequest request, Authentication authentication) {
-        goalService.updateTitle(goalId, request.getTitle(), authentication.getName());
+    public Response<Void> updateTitleAndIcon(@PathVariable Long goalId, @RequestBody @Valid GoalUpdateRequest request, Authentication authentication) {
+        goalService.updateTitleAndIcon(goalId, request.getTitle(), request.getIcon(), authentication.getName());
+        return Response.success();
+    }
+
+    @PatchMapping("/{goalId}/category-goal")
+    public Response<Void> updateCategoryGoals(@PathVariable Long goalId, @RequestBody @Valid CategoryGoalsRequest request, Authentication authentication) {
+        goalCreateService.updateCategoryGoals(authentication.getName(), goalId, request.getCategoryGoals());
+        return Response.success();
+    }
+
+    @PatchMapping("/{goalId}/daily-budgets")
+    public Response<Void> updateDailyBudgets(@PathVariable Long goalId, @RequestBody @Valid DailyBudgetsRequest request, Authentication authentication) {
+        goalCreateService.updateDailyBudgets(authentication.getName(), goalId, request.getDailyBudgets());
         return Response.success();
     }
 
