@@ -1,5 +1,6 @@
 package com.umc5th.muffler.domain.dailyplan.repository;
 
+import com.umc5th.muffler.domain.dailyplan.repository.dao.DailyPlanWithCostAndBudget;
 import com.umc5th.muffler.entity.DailyPlan;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +28,9 @@ public interface DailyPlanRepository extends JpaRepository<DailyPlan, Long>, Dai
     Optional<DailyPlan> findDailyPlanWithGoalByDateAndMember(String memberId, LocalDate date);
 
     @Query("SELECT dp.id FROM DailyPlan dp WHERE dp.goal.id = :goalId")
-    List<Long> findByGoalId(Long goalId);
+    List<Long> findIdsByGoalId(Long goalId);
+
+    List<DailyPlanWithCostAndBudget> findByGoalId(Long goalId);
 
     @Transactional
     @Modifying

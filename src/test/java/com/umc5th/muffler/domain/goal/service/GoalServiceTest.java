@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanRepository;
+import com.umc5th.muffler.domain.dailyplan.repository.dao.DailyPlanWithCostAndBudget;
 import com.umc5th.muffler.domain.goal.dto.GoalGetResponse;
 import com.umc5th.muffler.domain.goal.dto.GoalInfo;
 import com.umc5th.muffler.domain.goal.dto.GoalPreviewResponse;
@@ -150,14 +151,14 @@ class GoalServiceTest {
 
         when(dateTimeProvider.nowDate()).thenReturn(mockGoal.getStartDate());
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
-        when(goalRepository.findByDateBetweenAndDailyPlans(any(), any())).thenReturn(Optional.of(mockGoal));
+        when(goalRepository.findByDateBetween(any(), any())).thenReturn(Optional.of(mockGoal));
 
         GoalInfo response = goalService.getGoalNow(memberId);
 
         assertNotNull(response);
         assertEquals(mockGoal.getId(), response.getGoalId());
 
-        verify(goalRepository).findByDateBetweenAndDailyPlans(any(), any());
+        verify(goalRepository).findByDateBetween(any(), any());
     }
 
     @Test
@@ -295,14 +296,22 @@ class GoalServiceTest {
         DailyPlan plan1 = DailyPlanFixture.DAILY_PLAN_ONE;
         DailyPlan plan2 = DailyPlanFixture.DAILY_PLAN_TWO;
 
-        when(goalRepository.findById(goalId)).thenReturn(Optional.of(mockGoal));
+        DailyPlanWithCostAndBudget planDao1 = mock(DailyPlanWithCostAndBudget.class);
+        when(planDao1.getBudget()).thenReturn(plan1.getBudget());
+        when(planDao1.getTotalCost()).thenReturn(plan1.getTotalCost());
+        DailyPlanWithCostAndBudget planDao2 = mock(DailyPlanWithCostAndBudget.class);
+        when(planDao2.getBudget()).thenReturn(plan2.getBudget());
+        when(planDao2.getTotalCost()).thenReturn(plan2.getTotalCost());
+
+        when(goalRepository.findByIdAndFetchCategoryGoals(memberId, goalId)).thenReturn(Optional.of(mockGoal));
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(mockMember));
+        when(dailyPlanRepository.findByGoalId(goalId)).thenReturn(List.of(planDao1, planDao2));
 
         GoalGetResponse response = goalService.getGoalWithTotalCost(goalId, memberId);
 
         assertEquals(response.getTotalCost(), plan1.getTotalCost() + plan2.getTotalCost());
         assertEquals(response.getTitle(), mockGoal.getTitle());
 
-        verify(goalRepository).findById(goalId);
+        verify(goalRepository).findByIdAndFetchCategoryGoals(memberId, goalId);
     }
 }

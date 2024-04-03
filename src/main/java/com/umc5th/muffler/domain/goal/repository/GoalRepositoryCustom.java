@@ -12,9 +12,7 @@ import java.util.List;
 
 public interface GoalRepositoryCustom {
     List<Goal> findGoalsByYearMonth(String memberId, YearMonth yearMonth);
-
     Slice<Goal> findByMemberIdAndDailyPlans(String memberId, Pageable pageable, LocalDate today, LocalDate startDate);
-
     List<FinishedGoal> findFinishedGoals(LocalDate date);
     List<GoalTerm> findGoalsWithinDateRange(LocalDate startDate, LocalDate endDate);
 }
