@@ -4,6 +4,7 @@ import static com.umc5th.muffler.global.response.code.ErrorCode.GOAL_NOT_FOUND;
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.umc5th.muffler.domain.dailyplan.repository.DailyPlanRepository;
+import com.umc5th.muffler.domain.dailyplan.repository.dao.DailyPlanWithCostAndBudget;
 import com.umc5th.muffler.domain.expense.repository.ExpenseRepository;
 import com.umc5th.muffler.domain.goal.dto.GoalConverter;
 import com.umc5th.muffler.domain.goal.dto.GoalGetResponse;
@@ -80,7 +81,7 @@ public class GoalService {
         List<Long> categoryGoalIds = categoryGoalRepository.findByGoalId(goalId);
         categoryGoalRepository.deleteByIds(categoryGoalIds);
 
-        List<Long> dailyPlanIds = dailyPlanRepository.findByGoalId(goalId);
+        List<Long> dailyPlanIds = dailyPlanRepository.findIdsByGoalId(goalId);
         dailyPlanRepository.deleteByIds(dailyPlanIds);
 
         goalRepository.deleteByIdAndMemberId(goalId, memberId);
@@ -102,9 +103,9 @@ public class GoalService {
     public GoalGetResponse getGoalWithTotalCost(Long goalId, String memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
-        Goal goal = goalRepository.findById(goalId)
+        Goal goal = goalRepository.findByIdAndFetchCategoryGoals(memberId, goalId)
                 .orElseThrow(() -> new GoalException(GOAL_NOT_FOUND));
-        List<DailyPlan> dailyPlans = goal.getDailyPlans();
+        List<DailyPlanWithCostAndBudget> dailyPlans = dailyPlanRepository.findByGoalId(goalId);
 
         return GoalConverter.getGoalWithTotalCostResponse(goal, dailyPlans);
     }

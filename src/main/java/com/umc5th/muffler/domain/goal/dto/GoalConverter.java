@@ -1,5 +1,6 @@
 package com.umc5th.muffler.domain.goal.dto;
 
+import com.umc5th.muffler.domain.dailyplan.repository.dao.DailyPlanWithCostAndBudget;
 import com.umc5th.muffler.entity.CategoryGoal;
 import com.umc5th.muffler.entity.DailyPlan;
 import com.umc5th.muffler.entity.Expense;
@@ -18,8 +19,8 @@ public class GoalConverter {
         );
     }
 
-    public static GoalGetResponse getGoalWithTotalCostResponse(Goal goal, List<DailyPlan> dailyPlans){
-        long totalCost = dailyPlans.stream().mapToLong(DailyPlan::getTotalCost).sum();
+    public static GoalGetResponse getGoalWithTotalCostResponse(Goal goal, List<DailyPlanWithCostAndBudget> dailyPlans){
+        long totalCost = dailyPlans.stream().mapToLong(dp -> dp.getTotalCost()).sum();
 
         return GoalGetResponse.builder()
                 .totalBudget(goal.getTotalBudget())
@@ -28,7 +29,21 @@ public class GoalConverter {
                 .endDate(goal.getEndDate())
                 .icon(goal.getIcon())
                 .totalCost(totalCost)
+                .categoryGoals(getCategoryGoals(goal.getCategoryGoals()))
+                .dailyBudgets(getDailyBudgets(dailyPlans))
                 .build();
+    }
+
+    private static List<CategoryGoalRequest> getCategoryGoals(List<CategoryGoal> categoryGoals) {
+        return categoryGoals.stream()
+                .map(cg -> new CategoryGoalRequest(cg.getId(), cg.getCategory().getId(), cg.getBudget()))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Long> getDailyBudgets(List<DailyPlanWithCostAndBudget> dailyPlans) {
+        return dailyPlans.stream()
+                .map(dp -> dp.getBudget())
+                .collect(Collectors.toList());
     }
 
     public static GoalReportResponse getGoalReportResponse(List<CategoryGoal> categoryGoals, List<DailyPlan> dailyPlans, List<Expense> expenses) {
