@@ -65,6 +65,8 @@ spring:
 jwt:
   secret: testtesttesttesttesttesttesttest
   aud: testAUD
+kakao:
+  admin-key: testAdmin
 server:
   servlet:
     encoding:
