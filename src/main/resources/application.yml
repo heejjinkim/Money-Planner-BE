@@ -74,6 +74,8 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   aud: ${JWT_AUD}
+kakao:
+  admin-key: ${KAKAO_APP_ADMIN}
 
 server:
   servlet:
