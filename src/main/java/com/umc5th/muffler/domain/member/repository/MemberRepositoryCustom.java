@@ -7,4 +7,5 @@ import java.util.List;
 public interface MemberRepositoryCustom {
     List<NotEnrolledMember> findTodayNotEnrolledMember(LocalDate today);
     List<NotEnrolledMember> findYesterdayNotEnrolledMember(LocalDate yesterday);
+    void deleteMemberAndRelatedEntities(String memberId);
 }

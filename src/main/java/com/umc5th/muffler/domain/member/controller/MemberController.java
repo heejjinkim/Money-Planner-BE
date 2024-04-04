@@ -5,15 +5,18 @@ import com.umc5th.muffler.domain.member.dto.LoginResponse;
 import com.umc5th.muffler.domain.member.dto.MemberInfo;
 import com.umc5th.muffler.domain.member.dto.RefreshTokenRequest;
 import com.umc5th.muffler.domain.member.service.MemberService;
+import com.umc5th.muffler.entity.constant.SocialType;
 import com.umc5th.muffler.global.response.Response;
 import com.umc5th.muffler.global.security.jwt.TokenInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -37,6 +40,12 @@ public class MemberController {
     @PatchMapping("/join")
     public Response<MemberInfo> join(@RequestBody MemberInfo request, Authentication authentication) {
         return Response.success(memberService.join(authentication.getName(), request));
+    }
+
+    @DeleteMapping("/leave")
+    public Response<Void> withdraw(@RequestParam SocialType type, Authentication authentication) {
+        memberService.withdraw(type, authentication.getName());
+        return Response.success();
     }
 
     @GetMapping("/login/kakao")

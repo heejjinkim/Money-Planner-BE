@@ -1,8 +1,10 @@
 package com.umc5th.muffler.domain.member.service;
 
-import static com.umc5th.muffler.global.response.code.ErrorCode.BAD_REQUEST;
+import static com.umc5th.muffler.entity.constant.SocialType.APPLE;
+import static com.umc5th.muffler.entity.constant.SocialType.KAKAO;
 import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_TOKEN;
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
+import static com.umc5th.muffler.global.response.code.ErrorCode.UNSUPPORTED_SOCIAL_TYPE;
 
 import com.umc5th.muffler.domain.category.repository.BatchUpdateCategoryRepository;
 import com.umc5th.muffler.domain.member.dto.LoginRequest;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -39,7 +42,6 @@ public class MemberService {
     private final BatchUpdateCategoryRepository batchUpdateCategoryRepository;
     private final EntityManager entityManager;
 
-    @Transactional
     public LoginResponse login(LoginRequest request) {
         String memberId = socialLogin(request);
         Member member = registerUserIfNeed(memberId, request.getSocialType());
@@ -53,7 +55,6 @@ public class MemberService {
         return new LoginResponse(false, tokenInfo);
     }
 
-    @Transactional
     public MemberInfo join(String memberId, MemberInfo request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
@@ -61,7 +62,6 @@ public class MemberService {
         return new MemberInfo(member.getName(), member.getProfileImg());
     }
 
-    @Transactional
     public TokenInfo refreshAccessToken(String refreshToken) {
         if (!jwtTokenUtils.validateToken(refreshToken)) {
             throw new CommonException(INVALID_TOKEN);
@@ -69,21 +69,38 @@ public class MemberService {
         Member member = memberRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities());
+        UsernamePasswordAuthenticationToken authentication
+                = new UsernamePasswordAuthenticationToken(member, null, member.getAuthorities());
         TokenInfo newToken = jwtTokenUtils.generateToken(authentication);
 
         member.setRefreshToken(newToken.getRefreshToken());
         return newToken;
     }
 
+    public void withdraw(SocialType type, String memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
+
+        socialWithdraw(type, memberId);
+        memberRepository.deleteMemberAndRelatedEntities(member.getId());
+    }
+
+    private void socialWithdraw(SocialType type, String memberId) {
+        if (type == KAKAO) {
+            kakaoService.leave(memberId);
+            return;
+        }
+        throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);
+    }
+
     private String socialLogin(LoginRequest request) {
-        if (request.getSocialType() == SocialType.APPLE) {
+        if (request.getSocialType() == APPLE) {
             return appleService.login(request);
         }
-        if (request.getSocialType() == SocialType.KAKAO) {
+        if (request.getSocialType() == KAKAO) {
             return kakaoService.login(request.getIdToken());
         }
-        throw new CommonException(BAD_REQUEST, "지원하지 않는 소셜 로그인 입니다.");
+        throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);
     }
 
     private Member registerUserIfNeed(String memberId, SocialType socialType) {
