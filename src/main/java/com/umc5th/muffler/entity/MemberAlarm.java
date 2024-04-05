@@ -7,11 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -31,18 +28,22 @@ public class MemberAlarm extends BaseTimeEntity {
 
     @Column(nullable = false)
     @ColumnDefault("true")
+    @Setter
     private Boolean isDailyPlanRemindAgree;
 
     @Column(nullable = false)
     @ColumnDefault("true")
+    @Setter
     private Boolean isTodayEnrollRemindAgree;
 
     @Column(nullable = false)
     @ColumnDefault("true")
+    @Setter
     private Boolean isYesterdayEnrollRemindAgree;
 
     @Column(nullable = false)
     @ColumnDefault("true")
+    @Setter
     private Boolean isGoalEndReportRemindAgree;
 
     @OneToOne(mappedBy = "memberAlarm")

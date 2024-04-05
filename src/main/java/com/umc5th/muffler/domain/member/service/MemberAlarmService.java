@@ -2,8 +2,8 @@ package com.umc5th.muffler.domain.member.service;
 
 import com.umc5th.muffler.domain.member.dto.AlarmAgreeUpdateRequest;
 import com.umc5th.muffler.domain.member.dto.AlarmAgreementResponse;
-import com.umc5th.muffler.domain.member.dto.MemberConverter;
 import com.umc5th.muffler.domain.member.dto.TokenEnrollRequest;
+import com.umc5th.muffler.domain.member.repository.MemberAlarmRepository;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
 import com.umc5th.muffler.entity.Member;
 import com.umc5th.muffler.entity.MemberAlarm;
@@ -17,27 +17,30 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MemberAlarmService {
     private final MemberRepository memberRepository;
+    private final MemberAlarmRepository memberAlarmRepository;
 
     @Transactional
     public void fetchAlarmAgree(String memberId, AlarmAgreeUpdateRequest request) {
-        Member member = memberRepository.findMemberFetchAlarm(memberId)
+        MemberAlarm memberAlarm = memberAlarmRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-        member = MemberConverter.toEntity(member, request);
-        memberRepository.save(member);
+        memberAlarm.setIsDailyPlanRemindAgree(request.getDailyPlanRemindAgree());
+        memberAlarm.setIsTodayEnrollRemindAgree(request.getTodayEnrollRemindAgree());
+        memberAlarm.setIsGoalEndReportRemindAgree(request.getGoalEndRemindAgree());
+        memberAlarm.setIsYesterdayEnrollRemindAgree(request.getYesterdayEnrollRemindAgree());
     }
 
     @Transactional
     public void enrollAlarmToken(String memberId, TokenEnrollRequest request) {
-        Member member = memberRepository.findMemberFetchAlarm(memberId)
+        MemberAlarm memberAlarm = memberAlarmRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-        member.enrollToken(request.getToken());
+        memberAlarm.enrollToken(request.getToken());
     }
 
     @Transactional
     public void deleteAlarmToken(String memberId) {
-        Member member = memberRepository.findMemberFetchAlarm(memberId)
+        MemberAlarm memberAlarm = memberAlarmRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new MemberException(ErrorCode.MEMBER_NOT_FOUND));
-        member.deleteToken();
+        memberAlarm.deleteToken();
     }
 
     @Transactional(readOnly = true)
