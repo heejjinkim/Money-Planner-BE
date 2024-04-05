@@ -84,7 +84,7 @@ server:
       enabled: true
       force: true
   tomcat:
-    basedir: .
+    basedir: '/home/ubuntu/logs'
     access log:
       enabled: true
       pattern: "[%{yyyy-MM-dd HH:mm:ss.SSS}t]%{Referer}i(%a) %r -> [%s/%b/%Dms] | \t%{User-Agent}i"
