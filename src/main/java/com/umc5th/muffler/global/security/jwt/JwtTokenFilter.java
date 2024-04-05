@@ -52,7 +52,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return;
         }
-        log.error("Invalid token for requestURI: {}, Access from IP: {}", request.getRequestURI(), request.getRemoteAddr());
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null) {
+            clientIp = request.getRemoteAddr();
+        }
+        log.error("Invalid token for requestURI: {}, Access from IP: {}", request.getRequestURI(), clientIp);
         throw new CommonException(INVALID_TOKEN);
     }
 
