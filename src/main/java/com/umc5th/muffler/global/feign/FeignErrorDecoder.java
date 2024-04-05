@@ -8,8 +8,10 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
+@Slf4j
 public class FeignErrorDecoder implements ErrorDecoder {
 
     @SneakyThrows
@@ -17,8 +19,7 @@ public class FeignErrorDecoder implements ErrorDecoder {
     public Exception decode(String methodKey, Response response) {
         Reader reader = response.body().asReader(StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        String errorResult = bufferedReader.lines()
-                .collect(Collectors.joining(System.lineSeparator())).replace("\\", "");
+        String errorResult = bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
 
         HttpStatus status = HttpStatus.valueOf(response.status());
         String url = response.request().url();
