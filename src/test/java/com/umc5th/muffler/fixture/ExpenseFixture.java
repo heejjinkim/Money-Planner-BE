@@ -52,6 +52,19 @@ public class ExpenseFixture {
                 .build();
     }
 
+    public static Expense create(long id, LocalDate date, Member member, Category category) {
+        return Expense.builder()
+                .id(id)
+                .date(date)
+                .title("title")
+                .cost(100L)
+                .memo("memo")
+                .member(member)
+                .category(category)
+                .build();
+    }
+
+
     public static List<Expense> createList(int num, LocalDate date){
         Member member = Member.builder().id("1").build();
         Category category = Category.builder().id(1L).icon("icon").build();
