@@ -36,9 +36,10 @@ public class GoalConverter {
         return dailyPlans.stream().mapToLong(dp -> dp.getTotalCost()).sum();
     }
 
-    private static List<CategoryGoalRequest> getCategoryGoals(List<CategoryGoal> categoryGoals) {
+    private static List<CategoryGoalResponse> getCategoryGoals(List<CategoryGoal> categoryGoals) {
         return categoryGoals.stream()
-                .map(cg -> new CategoryGoalRequest(cg.getId(), cg.getCategory().getId(), cg.getBudget()))
+                .map(cg -> new CategoryGoalResponse(
+                        cg.getId(), cg.getCategory().getId(), cg.getCategory().getIcon(), cg.getBudget()))
                 .collect(Collectors.toList());
     }
 
