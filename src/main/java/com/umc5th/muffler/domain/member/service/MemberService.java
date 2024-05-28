@@ -10,7 +10,10 @@ import com.umc5th.muffler.domain.category.repository.BatchUpdateCategoryReposito
 import com.umc5th.muffler.domain.member.dto.LoginRequest;
 import com.umc5th.muffler.domain.member.dto.LoginResponse;
 import com.umc5th.muffler.domain.member.dto.MemberInfo;
+import com.umc5th.muffler.domain.member.dto.WithdrawRequest;
+import com.umc5th.muffler.domain.member.dto.WithdrawalConverter;
 import com.umc5th.muffler.domain.member.repository.MemberRepository;
+import com.umc5th.muffler.domain.member.repository.WithdrawalReasonRepository;
 import com.umc5th.muffler.entity.Member;
 import com.umc5th.muffler.entity.MemberAlarm;
 import com.umc5th.muffler.entity.constant.Role;
@@ -36,10 +39,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final WithdrawalReasonRepository withdrawalRepository;
+    private final BatchUpdateCategoryRepository batchUpdateCategoryRepository;
     private final AppleService appleService;
     private final KakaoService kakaoService;
     private final JwtTokenUtils jwtTokenUtils;
-    private final BatchUpdateCategoryRepository batchUpdateCategoryRepository;
     private final EntityManager entityManager;
 
     public LoginResponse login(LoginRequest request) {
@@ -77,10 +81,11 @@ public class MemberService {
         return newToken;
     }
 
-    public void withdraw(SocialType type, String memberId) {
+    public void withdraw(SocialType type, String memberId, WithdrawRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
 
+        withdrawalRepository.save(WithdrawalConverter.toEntity(member, request));
         socialWithdraw(type, memberId);
         memberRepository.deleteMemberAndRelatedEntities(member.getId());
     }
@@ -88,6 +93,9 @@ public class MemberService {
     private void socialWithdraw(SocialType type, String memberId) {
         if (type == KAKAO) {
             kakaoService.leave(memberId);
+            return;
+        }
+        if (type == APPLE) {
             return;
         }
         throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);

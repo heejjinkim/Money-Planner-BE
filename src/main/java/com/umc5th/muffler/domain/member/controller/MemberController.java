@@ -4,13 +4,14 @@ import com.umc5th.muffler.domain.member.dto.LoginRequest;
 import com.umc5th.muffler.domain.member.dto.LoginResponse;
 import com.umc5th.muffler.domain.member.dto.MemberInfo;
 import com.umc5th.muffler.domain.member.dto.RefreshTokenRequest;
+import com.umc5th.muffler.domain.member.dto.WithdrawRequest;
 import com.umc5th.muffler.domain.member.service.MemberService;
 import com.umc5th.muffler.entity.constant.SocialType;
 import com.umc5th.muffler.global.response.Response;
 import com.umc5th.muffler.global.security.jwt.TokenInfo;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,9 +43,10 @@ public class MemberController {
         return Response.success(memberService.join(authentication.getName(), request));
     }
 
-    @DeleteMapping("/leave")
-    public Response<Void> withdraw(@RequestParam SocialType type, Authentication authentication) {
-        memberService.withdraw(type, authentication.getName());
+    @PostMapping("/leave")
+    public Response<Void> withdraw(@RequestParam SocialType type, Authentication authentication,
+                                   @RequestBody @Valid WithdrawRequest request) {
+        memberService.withdraw(type, authentication.getName(), request);
         return Response.success();
     }
 
