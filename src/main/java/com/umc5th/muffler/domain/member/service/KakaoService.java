@@ -32,6 +32,7 @@ public class KakaoService {
     public void leave(String memberId) {
         try {
             kakaoClient.unlinkMember(Long.valueOf(memberId));
+            log.info("아이디 {}의 카카오 계정 연결 끊기가 완료되었습니다.", memberId);
         } catch (FeignException e) {
             String errorResult = e.getErrorResult();
             if (!errorResult.contains(KAKAO_LEAVE_EXCEPTION)) {
