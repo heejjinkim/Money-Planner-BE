@@ -15,12 +15,11 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "금지된 요청입니다."),
     INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "권한이 유효하지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않습니다."),
-
+    TOKEN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "토큰 에러입니다."),
 
     // Member 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     UNSUPPORTED_SOCIAL_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE,"지원하지 않는 소셜 로그인 입니다."),
-
 
     // Goal 에러
     GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 목표입니다."),
@@ -28,12 +27,10 @@ public enum ErrorCode {
     NO_GOAL_IN_GIVEN_DATE(HttpStatus.BAD_REQUEST, "해당 날짜에 일치하는 목표가 없습니다"),
     CATEGORY_GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리 목표입니다."),
 
-
     // DailyPlan 에러
     DAILYPLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 일일 소비 계획입니다."),
     NO_DAILY_PLAN_GIVEN_DATE(HttpStatus.NOT_FOUND, "수정하려는 소비날짜에 맞는 일일 목표가 없습니다. "
             + "목표가 설정된 다른 날로 수정을 하거나 수정하려는 날에 목표를 설정해주세요."),
-
 
     // Category 에러
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
@@ -51,7 +48,6 @@ public enum ErrorCode {
     EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 소비 내역입니다."),
     CANNOT_UPDATE_OTHER_MEMBER_EXPENSE(HttpStatus.UNAUTHORIZED, "다른 유저의 소비 내역을 수정할 수 없습니다"),
     CANNOT_UPDATE_TO_ZERO_DAY(HttpStatus.CONFLICT, "제로 데이로 지정한 날로는 소비 내역을 옮길 수 없습니다."),
-
 
     // Routine 에러
     INVALID_ROUTINE_INPUT(HttpStatus.BAD_REQUEST, "올바르지 않은 루틴 입력입니다."),
