@@ -67,6 +67,14 @@ jwt:
   aud: testAUD
 kakao:
   admin-key: testAdmin
+social-login:
+  apple:
+    grant-type: authorization_code
+    client-id: testAppleClientId
+    key-id: testAppleKeyId
+    team-id: testAppleTeamId
+    audience: https://appleid.apple.com
+    private-key-path: "classpath:muffler-apple-auth-key.p8"
 server:
   servlet:
     encoding:
