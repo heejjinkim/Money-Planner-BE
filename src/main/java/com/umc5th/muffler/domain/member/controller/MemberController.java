@@ -6,7 +6,6 @@ import com.umc5th.muffler.domain.member.dto.MemberInfo;
 import com.umc5th.muffler.domain.member.dto.RefreshTokenRequest;
 import com.umc5th.muffler.domain.member.dto.WithdrawRequest;
 import com.umc5th.muffler.domain.member.service.MemberService;
-import com.umc5th.muffler.entity.constant.SocialType;
 import com.umc5th.muffler.global.response.Response;
 import com.umc5th.muffler.global.security.jwt.TokenInfo;
 import javax.validation.Valid;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -34,7 +32,7 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public Response<LoginResponse> login(@RequestBody LoginRequest request) {
+    public Response<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         return Response.success(memberService.login(request));
     }
 
@@ -44,9 +42,8 @@ public class MemberController {
     }
 
     @PostMapping("/leave")
-    public Response<Void> withdraw(@RequestParam SocialType type, Authentication authentication,
-                                   @RequestBody @Valid WithdrawRequest request) {
-        memberService.withdraw(type, authentication.getName(), request);
+    public Response<Void> withdraw(@RequestBody @Valid WithdrawRequest request, Authentication authentication) {
+        memberService.withdraw(request, authentication.getName());
         return Response.success();
     }
 

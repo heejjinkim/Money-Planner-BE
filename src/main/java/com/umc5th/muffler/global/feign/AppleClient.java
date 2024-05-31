@@ -11,10 +11,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 )
 public interface AppleClient {
     @PostMapping("/auth/token")
-    AppleToken getIdToken(
+    AppleToken getAuthToken(
             @RequestParam("client_id") String clientId,
             @RequestParam("client_secret") String clientSecret,
             @RequestParam("grant_type") String grantType,
             @RequestParam("code") String code
+    );
+
+    @PostMapping("/auth/revoke")
+    void leave(
+           @RequestParam("client_id") String clientId,
+           @RequestParam("client_secret") String clientSecret,
+           @RequestParam("token") String token
     );
 }

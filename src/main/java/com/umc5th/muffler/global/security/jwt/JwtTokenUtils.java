@@ -1,11 +1,23 @@
 package com.umc5th.muffler.global.security.jwt;
 
+import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_TOKEN;
+
 import com.umc5th.muffler.entity.constant.Role;
 import com.umc5th.muffler.global.response.exception.CommonException;
 import com.umc5th.muffler.global.util.DateTimeProvider;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
-
+import java.security.Key;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,19 +28,11 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_TOKEN;
-
 @Slf4j
 @Component
 public class JwtTokenUtils {
-    private final int ACCESS_TOKEN_DURATION = 1;
-    private final int REFRESH_TOKEN_DURATION = 30;
+    private static final int ACCESS_TOKEN_DURATION = 1;
+    private static final int REFRESH_TOKEN_DURATION = 30;
 
     private final DateTimeProvider dateTimeProvider;
     private final Key key;
