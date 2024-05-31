@@ -21,7 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final String TOKEN_ERROR_MESSAGE = "유효한 인증 토큰이 필요합니다.";
+    private static final String TOKEN_ERROR_MESSAGE = "유효한 인증 토큰이 필요합니다.";
     private final JwtTokenUtils jwtTokenUtils;
 
     @Override
