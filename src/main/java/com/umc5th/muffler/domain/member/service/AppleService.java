@@ -32,6 +32,16 @@ public class AppleService {
         return JwtDecoder.decodePayload(idToken, AppleIdToken.class).getSub();
     }
 
+    public void leave(String authenticationCode) {
+        String accessToken = getAppleToken(authenticationCode).getAccessToken();
+
+        appleClient.leave(
+                appleProperties.getClientId(),
+                generateClientSecret(),
+                accessToken
+        );
+    }
+
     private AppleToken getAppleToken(String authenticationCode) {
         return appleClient.getAuthToken(
                 appleProperties.getClientId(),
@@ -65,15 +75,5 @@ public class AppleService {
             e.printStackTrace();
             throw new MemberException(INTERNAL_SERVER_ERROR, "String 타입 ApplePrivateKey convert 중 에러 발생");
         }
-    }
-
-    public void leave(String authenticationCode) {
-        String accessToken = getAppleToken(authenticationCode).getAccessToken();
-
-        appleClient.leave(
-                appleProperties.getClientId(),
-                generateClientSecret(),
-                accessToken
-        );
     }
 }

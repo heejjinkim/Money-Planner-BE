@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class MemberService {
-
     private final MemberRepository memberRepository;
     private final WithdrawalReasonRepository withdrawalRepository;
     private final BatchUpdateCategoryRepository batchUpdateCategoryRepository;
@@ -91,22 +90,6 @@ public class MemberService {
         memberRepository.deleteMemberAndRelatedEntities(member.getId());
     }
 
-    private void socialWithdraw(WithdrawRequest request, String memberId) {
-        SocialType type = request.getSocialType();
-        if (type == KAKAO) {
-            kakaoService.leave(memberId);
-            return;
-        }
-        if (type == APPLE) {
-            if (request.getAuthenticationCode() == null) {
-                throw new MemberException(BAD_REQUEST, "애플 AuthenticationCode가 없습니다.");
-            }
-            appleService.leave(request.getAuthenticationCode());
-            return;
-        }
-        throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);
-    }
-
     private String socialLogin(LoginRequest request) {
         SocialType type = request.getSocialType();
         if (type == APPLE) {
@@ -134,5 +117,21 @@ public class MemberService {
         }
 
         return member;
+    }
+
+    private void socialWithdraw(WithdrawRequest request, String memberId) {
+        SocialType type = request.getSocialType();
+        if (type == KAKAO) {
+            kakaoService.leave(memberId);
+            return;
+        }
+        if (type == APPLE) {
+            if (request.getAuthenticationCode() == null) {
+                throw new MemberException(BAD_REQUEST, "애플 AuthenticationCode가 없습니다.");
+            }
+            appleService.leave(request.getAuthenticationCode());
+            return;
+        }
+        throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);
     }
 }
