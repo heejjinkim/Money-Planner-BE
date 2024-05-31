@@ -3,7 +3,7 @@ package com.umc5th.muffler.domain.member.service;
 import static com.umc5th.muffler.global.response.code.ErrorCode.INTERNAL_SERVER_ERROR;
 
 import com.umc5th.muffler.domain.member.dto.AppleIdToken;
-import com.umc5th.muffler.domain.member.dto.LoginRequest;
+import com.umc5th.muffler.domain.member.dto.AppleToken;
 import com.umc5th.muffler.global.feign.AppleClient;
 import com.umc5th.muffler.global.response.exception.MemberException;
 import com.umc5th.muffler.global.security.jwt.JwtDecoder;
@@ -27,16 +27,18 @@ public class AppleService {
     private final AppleProperties appleProperties;
     private final DateTimeProvider dateTimeProvider;
 
-    public String login(LoginRequest request) {
-        String authentication = request.getIdToken();
-        String idToken = appleClient.getIdToken(
+    public String login(String authenticationCode) {
+        String idToken = getAppleToken(authenticationCode).getIdToken();
+        return JwtDecoder.decodePayload(idToken, AppleIdToken.class).getSub();
+    }
+
+    private AppleToken getAppleToken(String authenticationCode) {
+        return appleClient.getAuthToken(
                 appleProperties.getClientId(),
                 generateClientSecret(),
                 appleProperties.getGrantType(),
-                authentication
-        ).getIdToken();
-
-        return JwtDecoder.decodePayload(idToken, AppleIdToken.class).getSub();
+                authenticationCode
+        );
     }
 
     private String generateClientSecret() {
@@ -63,5 +65,15 @@ public class AppleService {
             e.printStackTrace();
             throw new MemberException(INTERNAL_SERVER_ERROR, "String 타입 ApplePrivateKey convert 중 에러 발생");
         }
+    }
+
+    public void leave(String authenticationCode) {
+        String accessToken = getAppleToken(authenticationCode).getAccessToken();
+
+        appleClient.leave(
+                appleProperties.getClientId(),
+                generateClientSecret(),
+                accessToken
+        );
     }
 }

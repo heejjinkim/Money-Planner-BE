@@ -2,6 +2,7 @@ package com.umc5th.muffler.domain.member.service;
 
 import static com.umc5th.muffler.entity.constant.SocialType.APPLE;
 import static com.umc5th.muffler.entity.constant.SocialType.KAKAO;
+import static com.umc5th.muffler.global.response.code.ErrorCode.BAD_REQUEST;
 import static com.umc5th.muffler.global.response.code.ErrorCode.INVALID_TOKEN;
 import static com.umc5th.muffler.global.response.code.ErrorCode.MEMBER_NOT_FOUND;
 import static com.umc5th.muffler.global.response.code.ErrorCode.UNSUPPORTED_SOCIAL_TYPE;
@@ -81,32 +82,38 @@ public class MemberService {
         return newToken;
     }
 
-    public void withdraw(SocialType type, String memberId, WithdrawRequest request) {
+    public void withdraw(WithdrawRequest request, String memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MEMBER_NOT_FOUND));
 
         withdrawalRepository.save(WithdrawalConverter.toEntity(member, request));
-        socialWithdraw(type, memberId);
+        socialWithdraw(request, memberId);
         memberRepository.deleteMemberAndRelatedEntities(member.getId());
     }
 
-    private void socialWithdraw(SocialType type, String memberId) {
+    private void socialWithdraw(WithdrawRequest request, String memberId) {
+        SocialType type = request.getSocialType();
         if (type == KAKAO) {
             kakaoService.leave(memberId);
             return;
         }
         if (type == APPLE) {
+            if (request.getAuthenticationCode() == null) {
+                throw new MemberException(BAD_REQUEST, "애플 AuthenticationCode가 없습니다.");
+            }
+            appleService.leave(request.getAuthenticationCode());
             return;
         }
         throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);
     }
 
     private String socialLogin(LoginRequest request) {
-        if (request.getSocialType() == APPLE) {
-            return appleService.login(request);
+        SocialType type = request.getSocialType();
+        if (type == APPLE) {
+            return appleService.login(request.getToken());
         }
-        if (request.getSocialType() == KAKAO) {
-            return kakaoService.login(request.getIdToken());
+        if (type == KAKAO) {
+            return kakaoService.login(request.getToken());
         }
         throw new MemberException(UNSUPPORTED_SOCIAL_TYPE);
     }
