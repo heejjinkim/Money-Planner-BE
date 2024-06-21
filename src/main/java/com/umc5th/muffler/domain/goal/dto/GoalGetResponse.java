@@ -20,6 +20,6 @@ public class GoalGetResponse {
     private LocalDate endDate;
     private long totalBudget;
     private long totalCost;
-    private List<CategoryGoalRequest> categoryGoals;
+    private List<CategoryGoalResponse> categoryGoals;
     private List<Long> dailyBudgets;
 }

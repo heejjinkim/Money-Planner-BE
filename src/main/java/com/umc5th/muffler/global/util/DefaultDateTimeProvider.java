@@ -17,6 +17,11 @@ public class DefaultDateTimeProvider implements DateTimeProvider {
         return LocalDate.now(ZoneId.of(ZONE_ID));
     }
 
+    @Override
+    public Date getIssuedDate() {
+        return Date.from(ZonedDateTime.now(ZoneId.of(ZONE_ID)).toInstant());
+    }
+
     /**
      * @return (서울 시간대의 현재 시각 + duration 일) 후의 {@code Date} 반환
      */
@@ -25,5 +30,12 @@ public class DefaultDateTimeProvider implements DateTimeProvider {
         return Date.from(
                 ZonedDateTime.now(ZoneId.of(ZONE_ID))
                         .plus(duration, ChronoUnit.DAYS).toInstant());
+    }
+
+    @Override
+    public Date getDateAfterMinutes(int minutes) {
+        return Date.from(
+                ZonedDateTime.now(ZoneId.of(ZONE_ID))
+                        .plus(minutes, ChronoUnit.MINUTES).toInstant());
     }
 }

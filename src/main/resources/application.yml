@@ -33,6 +33,8 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
   jpa:
     hibernate:
       ddl-auto: ${DB_DLL_MODE}
@@ -76,6 +78,14 @@ jwt:
   aud: ${JWT_AUD}
 kakao:
   admin-key: ${KAKAO_APP_ADMIN}
+social-login:
+  apple:
+    grant-type: authorization_code
+    client-id: ${APPLE_CLIENT_ID}
+    key-id: ${APPLE_KEY_ID}
+    team-id: ${APPLE_TEAM_ID}
+    audience: https://appleid.apple.com
+    private-key-path: "classpath:muffler-apple-auth-key.p8"
 
 server:
   servlet:
