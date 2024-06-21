@@ -52,10 +52,11 @@ public class MemberService {
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 member.getId(), null, Collections.singleton(new SimpleGrantedAuthority(member.getRole().name())));
         TokenInfo tokenInfo = jwtTokenUtils.generateToken(authentication);
+        member.setRefreshToken(tokenInfo.getRefreshToken());
+
         if (member.getName() == null) {
             return new LoginResponse(true, tokenInfo);
         }
-        member.setRefreshToken(tokenInfo.getRefreshToken());
         return new LoginResponse(false, tokenInfo);
     }
 
