@@ -95,7 +95,7 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-    context-path: ${SECRET_BASE_PATH}
+#    context-path: ${SECRET_BASE_PATH}
 
 logging.level:
   org.hibernate.SQL: debug
