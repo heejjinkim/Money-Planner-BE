@@ -134,6 +134,7 @@ public class GoalCreateService {
 
     private void handleRestore(GoalCreateRequest request, String memberId, List<DailyPlan> dailyPlans) {
         if (request.getRestore()) {
+            // restore한 expense를 dailyPlan의 totalCost에 업데이트
             Map<LocalDate, Long> costMap = expenseRepository
                     .findTotalCostDate(memberId, request.getStartDate(), request.getEndDate());
 
@@ -143,7 +144,7 @@ public class GoalCreateService {
                 }});
             return;
         }
-
+        // restore 하지 않는 expense 삭제
         List<Long> expenseIds = expenseRepository
                 .findByMemberIdAndDateRange(memberId, request.getStartDate(), request.getEndDate());
         expenseRepository.deleteByIds(expenseIds);

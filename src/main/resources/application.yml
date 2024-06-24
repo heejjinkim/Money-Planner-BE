@@ -29,10 +29,14 @@ spring:
   config:
     activate:
       on-profile: "common"
+  jackson:
+    time-zone: Asia/Seoul
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
   jpa:
     hibernate:
       ddl-auto: ${DB_DLL_MODE}
@@ -91,6 +95,7 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+#    context-path: ${SECRET_BASE_PATH}
 
 logging.level:
   org.hibernate.SQL: debug

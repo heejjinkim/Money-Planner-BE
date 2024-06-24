@@ -23,7 +23,6 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
 public class MemberController {
-
     private final MemberService memberService;
 
     @GetMapping("/connect")
@@ -37,7 +36,7 @@ public class MemberController {
     }
 
     @PatchMapping("/join")
-    public Response<MemberInfo> join(@RequestBody MemberInfo request, Authentication authentication) {
+    public Response<MemberInfo> join(@RequestBody @Valid MemberInfo request, Authentication authentication) {
         return Response.success(memberService.join(authentication.getName(), request));
     }
 
@@ -47,6 +46,14 @@ public class MemberController {
         return Response.success();
     }
 
+    @PostMapping("/refresh-token")
+    public Response<TokenInfo> refreshAccessToken(@RequestBody @Valid RefreshTokenRequest request) {
+        return Response.success(memberService.refreshAccessToken(request.getRefreshToken()));
+    }
+
+    /**
+     * Web 로그인 용 api
+     */
     @GetMapping("/login/kakao")
     public RedirectView kakaoLogin() {
         return new RedirectView("/oauth2/authorization/kakao");
@@ -55,11 +62,6 @@ public class MemberController {
     @GetMapping("/login/apple")
     public RedirectView appleLogin() {
         return new RedirectView("/oauth2/authorization/apple");
-    }
-
-    @PostMapping("/refresh-token")
-    public Response<TokenInfo> refreshAccessToken(@RequestBody RefreshTokenRequest request) {
-        return Response.success(memberService.refreshAccessToken(request.getRefreshToken()));
     }
 
 }
