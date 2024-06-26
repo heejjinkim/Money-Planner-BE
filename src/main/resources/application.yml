@@ -29,10 +29,14 @@ spring:
   config:
     activate:
       on-profile: "common"
+  jackson:
+    time-zone: Asia/Seoul
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
   jpa:
     hibernate:
       ddl-auto: ${DB_DLL_MODE}
@@ -74,6 +78,16 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   aud: ${JWT_AUD}
+kakao:
+  admin-key: ${KAKAO_APP_ADMIN}
+social-login:
+  apple:
+    grant-type: authorization_code
+    client-id: ${APPLE_CLIENT_ID}
+    key-id: ${APPLE_KEY_ID}
+    team-id: ${APPLE_TEAM_ID}
+    audience: https://appleid.apple.com
+    private-key-path: "classpath:muffler-apple-auth-key.p8"
 
 server:
   servlet:
@@ -81,17 +95,11 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-  tomcat:
-    basedir: .
-    access log:
-      enabled: true
-      pattern: "[%{yyyy-MM-dd HH:mm:ss.SSS}t]%{Referer}i(%a) %r -> [%s/%b/%Dms] | \t%{User-Agent}i"
-      directory: logs
-      encoding: utf-8
-      max-days: 60
+    context-path: ${SECRET_BASE_PATH}
 
 logging.level:
   org.hibernate.SQL: debug
+#  org.hibernate.type: trace  # 파라미터 로그용
 
 thread:
   pool:

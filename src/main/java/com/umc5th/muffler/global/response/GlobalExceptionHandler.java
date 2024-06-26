@@ -2,6 +2,7 @@ package com.umc5th.muffler.global.response;
 
 import com.umc5th.muffler.global.response.code.ErrorCode;
 import com.umc5th.muffler.global.response.exception.CustomException;
+import com.umc5th.muffler.global.response.exception.FeignException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -41,4 +42,15 @@ public class GlobalExceptionHandler {
                 .body(Response.error(message));
     }
 
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<Object> handleFeignException(FeignException e) {
+        HttpStatus status = e.getStatus();
+        String url = e.getUrl();
+        String errorResult = e.getErrorResult();
+        String message = String.format("status: %s, url: %s", status.toString(), url);
+        message = message + ", " + errorResult;
+        log.error("Feign Error occur. {}", message);
+        return ResponseEntity.status(status)
+                .body(Response.error(message));
+    }
 }

@@ -1,6 +1,7 @@
 package com.umc5th.muffler.domain.goal.dto;
 
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,4 +20,6 @@ public class GoalGetResponse {
     private LocalDate endDate;
     private long totalBudget;
     private long totalCost;
+    private List<CategoryGoalResponse> categoryGoals;
+    private List<Long> dailyBudgets;
 }

@@ -8,7 +8,7 @@ public class MailConverter {
     public static Inquiry toEntity(InquiryRequest request, Member member){
         return Inquiry.builder()
                 .content(request.getContent())
-                .member(member)
+                .memberId(member.getId())
                 .build();
     }
 }

@@ -198,7 +198,8 @@ package.json
 .env
 application-oauth.yml
 application.properties
+/src/main/resources/firebase-private-key.json
+/src/main/resources/muffler-apple-auth-key.p8
 
 # Generated files
 src/main/generated/
-/src/main/resources/firebase-private-key.json

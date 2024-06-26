@@ -21,10 +21,12 @@ jobs:
         run: |
           echo "$ENV" >> .env
           echo "$FIREBASE_PRIVATE_KEY" >> ./src/main/resources/firebase-private-key.json
+          echo "$APPLE_PRIVATE_KEY" >> ./src/main/resources/muffler-apple-auth-key.p8
 
         env:
           ENV: ${{ secrets.ENV }}
           FIREBASE_PRIVATE_KEY : ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          APPLE_PRIVATE_KEY : ${{ secrets.APPLE_PRIVATE_KEY }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

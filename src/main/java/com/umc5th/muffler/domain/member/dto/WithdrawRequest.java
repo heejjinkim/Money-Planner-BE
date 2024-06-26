@@ -4,17 +4,16 @@ import com.umc5th.muffler.entity.constant.SocialType;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class LoginRequest {
+public class WithdrawRequest {
     @NotNull
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
     @NotNull
-    private String token;
+    private String reason;
+
+    // 애플 탈퇴 시 필요
+    private String authenticationCode;
 }

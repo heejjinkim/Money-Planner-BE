@@ -21,7 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final String TOKEN_ERROR_MESSAGE = "유효한 인증 토큰이 필요합니다.";
+    private static final String TOKEN_ERROR_MESSAGE = "유효한 인증 토큰이 필요합니다.";
     private final JwtTokenUtils jwtTokenUtils;
 
     @Override
@@ -52,7 +52,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return;
         }
-        log.error("Invalid token for requestURI: {}", request.getRequestURI());
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null) {
+            clientIp = request.getRemoteAddr();
+        }
+        log.error("Invalid token for requestURI: {}, Access from IP: {}", request.getRequestURI(), clientIp);
         throw new CommonException(INVALID_TOKEN);
     }
 
