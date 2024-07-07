@@ -3,6 +3,7 @@ spring:
     group:
       "local": "local, common"
       "prod" : "prod, common"
+      "mock" : "mock, common"
     active: local # Select profile
 ---
 spring:
@@ -19,6 +20,16 @@ spring:
   config:
     activate:
       on-profile: "prod"
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      dialect: org.hibernate.dialect.MySQL8Dialect
+---
+spring:
+  config:
+    activate:
+      on-profile: "mock"
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
@@ -95,7 +106,7 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-#    context-path: ${SECRET_BASE_PATH}
+    context-path: ${SECRET_BASE_PATH}
 
 logging.level:
   org.hibernate.SQL: debug

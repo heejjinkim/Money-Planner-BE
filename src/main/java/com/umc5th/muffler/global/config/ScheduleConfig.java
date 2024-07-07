@@ -8,7 +8,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 @Configuration
-@Profile({"local", "prod"})
+@Profile({"local", "prod", "mock"})
 public class ScheduleConfig implements SchedulingConfigurer {
     @Value("${thread.pool.size}")
     private int POOL_SIZE;

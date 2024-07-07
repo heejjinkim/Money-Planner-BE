@@ -74,6 +74,7 @@ public class CategoryController {
             + "삭제되는 카테고리로 등록해둔 반복기록의 개수이다. 이미 삭제된 카테고리와 기본 카테고리는 삭제할 수 없다.")
     @ErrorResponses(value = {MEMBER_NOT_FOUND, CATEGORY_NOT_FOUND, ALREADY_INACTIVE_CATEGORY, CANNOT_DELETE_DEFAULT_CATEGORY})
     public Response<DeleteCategoryResponse> deleteCategory(Principal principal, @PathVariable("categoryId") Long categoryId) {
+        System.out.println(principal.getName());
         DeleteCategoryResponse response = categoryService.deactivateCategory(principal.getName(), categoryId);
         return Response.success(response);
     }

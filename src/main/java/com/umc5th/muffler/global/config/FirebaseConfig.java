@@ -12,7 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile({"prod", "local"})
+@Profile({"prod", "local", "mock"})
 public class FirebaseConfig {
     @Value("${firebase.key.path}")
     private String firebaseKeyPath;
