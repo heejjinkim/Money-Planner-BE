@@ -1,4 +1,9 @@
 # 💸 Money Planner (Muffler) - Backend
+
+> 사용자의 소비 습관 개선을 돕는 소비 관리 앱, 머플러
+
+<br>
+
 📅 2023.12 ~ 2024.12
 - PM & Designer : 1명
 - iOS Developers : 4명
