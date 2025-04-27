@@ -47,14 +47,6 @@ https://apps.apple.com/kr/app/%EB%A8%B8%ED%94%8C%EB%9F%AC/id6476785127
 ![MoneyPlanner (2)](https://github.com/user-attachments/assets/c12dabda-ed76-4146-9f67-be72cd0f69ca)
 
 
-## 🖥️ Backend 
-- ERD 개발 및 구조 설계
-- 하루, 목표 기간, 하루 단위 소비 데이터 조회 (Category 필터링 포함)
-- 소비 리포트 구현 (Goal 대비, 하루 평균 소비, 카테고리별 리포트)
-- 하루 소비 평가 등록 및 수정
-- 소비 데이터 검색
-- 문의 메일 전송
-
 <br>
 
 ## 🛠️ Tech Stack
@@ -64,4 +56,13 @@ https://apps.apple.com/kr/app/%EB%A8%B8%ED%94%8C%EB%9F%AC/id6476785127
 - MySQL
 - AWS (EC2, S3, CodeDeploy)
 - Swagger (API Documentation)
+
+<br>
+
+## 💻 Backend Developers
+
+| 김희진 | 송지웅 | 신지영 | 임하정
+|:-------:|:----:|:-----:|:-----:| 
+|<img src="https://avatars.githubusercontent.com/u/108065505?v=4" width="100px" />| <img src="https://avatars.githubusercontent.com/u/55657581?v=4" width="100px" />| <img src="https://avatars.githubusercontent.com/u/80145172?v=4" width="100px" />| <img src="https://avatars.githubusercontent.com/u/133209775?v=4" width="100px" />| 
+| [@heejjinkim](https://github.com/heejjinkim) | [@jwsong98](https://github.com/jwsong98) | [@Sj0-0i](https://github.com/Sj0-0i) | [@hajungIm](https://github.com/hajungIm) |
 
